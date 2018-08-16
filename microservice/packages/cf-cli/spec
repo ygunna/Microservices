@@ -1,0 +1,8 @@
+---
+name: cf-cli
+
+dependencies:
+  - golang
+
+files:
+  - vendor/code.cloudfoundry.org/cli/*

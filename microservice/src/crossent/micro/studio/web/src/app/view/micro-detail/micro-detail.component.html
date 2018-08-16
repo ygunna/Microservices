@@ -1,0 +1,389 @@
+<h2 class="ui dividing header">마이크로서비스 상세</h2>
+
+<div class="ui main container fluid">
+
+  <div class="box-wrap">
+
+    <div class="ui stackable grid">
+      <div class="fourteen wide column" id="viewer">
+        <div class="ui styled fluid accordion">
+          <div class="title">
+            <i class="dropdown icon"></i>
+            {{micro.name}}
+          </div>
+          <div class="content">
+            <div class="ui grid">
+              <div class="two column row">
+                <div class="column">
+                  <div class="ui message">
+                    <div class="header">
+                      버전
+                    </div>
+                    <p>{{micro.version}}</p>
+                  </div>
+                </div>
+                <div class="column">
+                  <div class="ui message">
+                    <div class="header">
+                      상태
+                    </div>
+                    <p>{{micro.status}}</p>
+                  </div>
+                </div>
+              </div>
+              <div class="two column row">
+                <div class="column">
+                  <div class="ui message">
+                    <div class="header">
+                      App
+                    </div>
+                    <p>{{micro.app}}</p>
+                  </div>
+                </div>
+                <div class="column">
+                  <div class="ui message">
+                    <div class="header">
+                      Service
+                    </div>
+                    <p>{{micro.service}}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="ui grid">
+              <div class="one column row">
+                <div class="column">
+                  <div class="ui message">
+                    <div class="header">
+                      설명
+                    </div>
+                    <p>{{micro.description}}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="ui grid">
+              <div class="one column row">
+                <div class="column">
+                  <div class="ui message">
+                    <div class="header">
+                      URL
+                    </div>
+                    <p>{{micro.url}}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!--<div class="ui grid">-->
+              <!--<div class="one column row">-->
+                <!--<div class="column">-->
+                  <!--<div class="ui message">-->
+                    <!--<div class="header">-->
+                      <!--Entrypoint API <span class="gomodal" (click)="popModalFront(micro.id)"><i class="write link icon"></i></span>-->
+                      <!--<table class="ui single line table">-->
+                        <!--<thead>-->
+                        <!--<tr>-->
+                          <!--<th>method</th>-->
+                          <!--<th>path</th>-->
+                        <!--</tr>-->
+                        <!--</thead>-->
+                        <!--<tbody>-->
+                        <!--<tr *ngFor="let swagger of swaggers">-->
+                          <!--<td><span class="ui blue label">{{swagger.method | uppercase}}</span></td>-->
+                          <!--<td>{{swagger.path}}</td>-->
+                        <!--</tr>-->
+                        <!--</tbody>-->
+                      <!--</table>-->
+                    <!--</div>-->
+                    <!--<p></p>-->
+                  <!--</div>-->
+                <!--</div>-->
+              <!--</div>-->
+            <!--</div>-->
+
+          </div>
+        </div>
+        <h4 class="ui top attached block header">
+          <div class="ui icon" data-tooltip="확대" data-inverted="" (click)="zoom('in')">
+            <i class="bordered tiny blue plus link icon"></i>
+          </div>
+          <div class="ui icon" data-tooltip="축소" data-inverted="" (click)="zoom('out')">
+            <i class="bordered tiny blue minus link icon"></i>
+          </div>
+          <div class="ui icon" data-tooltip="시작" data-inverted="" (click)="start()">
+            <i class="bordered tiny blue play link icon"></i>
+          </div>
+          <div class="ui icon" data-tooltip="정지" data-inverted="" (click)="stop()">
+            <i class="bordered tiny red stop link icon"></i>
+          </div>
+          <div class="ui icon" data-tooltip="수정" data-inverted="">
+            <a routerLink="/edit/{{id}}" routerLinkActive="active"><i class="bordered tiny green write link icon"></i></a>
+          </div>
+          <div class="ui icon" data-tooltip="삭제" data-inverted=""  (click)="delete()">
+            <i class="bordered tiny red trash link icon"></i>
+          </div>
+          <div class="ui icon" data-tooltip="새로고침" data-inverted="">
+            <i class="bordered tiny black notched circle link icon" (click)="redoSvg()"></i>
+          </div>
+          <!--
+          <form class="ui icon small form" #filterForm="ngForm">
+            <div class="field">
+              <div class="ui field">
+                <select class="ui dropdown" [(ngModel)]="filter" name="filter" (ngModelChange)="onChange($event)">
+                  <option value="0">All</option>
+                  <option value="1">App</option>
+                </select>
+              </div>
+            </div>
+          </form>
+          -->
+          <!--<div class="ui icon small api">-->
+            <!--<button class="ui grey right floated small button" (click)="makeApi()">API 배포</button>-->
+          <!--</div>-->
+        </h4>
+        <div class="ui bottom attached segment">
+          <div id="chart" class="row" style="width:100%; height:600px; margin-left: 6px; overflow: auto">
+            <svg #svg id="dropzone" width="100%" height="100%" appDroppable [droppedNodes]="nodes">
+              <filter id="dropShadow" width="120%" height="140%">
+                <feGaussianBlur in="SourceAlpha" stdDeviation="2" />
+                <feOffset dx="2" dy="4" />
+                <feMerge>
+                  <feMergeNode />
+                  <feMergeNode in="SourceGraphic" />
+                </feMerge>
+              </filter>
+              <g [zoomableOf]="svg">
+              </g>
+            </svg>
+          </div>
+        </div>
+      </div>
+      <div class="two wide column" id="details">
+        <div class="ui styled fluid accordion">
+          <div class="title">
+            <i class="dropdown icon"></i>
+            App
+          </div>
+          <div class="content">
+            <table class="ui grey celled table">
+              <thead>
+              <tr>
+                <th>Entrypoint</th>
+                <th>Name</th>
+                <th>Url</th>
+                <th>Instances</th>
+                <th>Status</th>
+              </tr>
+              </thead>
+              <tbody>
+              <tr *ngFor="let app of (apps)">
+                <td><input type="radio" name="frontend" [value]="app.url" [(ngModel)]="frontend"></td>
+                <td>{{app.appName}}</td>
+                <td>{{app.url}}</td>
+                <td>{{app.app}}</td>
+                <td>{{app.status}}</td>
+              </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="title">
+            <i class="dropdown icon"></i>
+            Service
+          </div>
+          <div class="content">
+            <table class="ui grey celled table">
+              <thead>
+              <tr>
+                <th>Instance name</th>
+                <th>Service name</th>
+                <th>Plan</th>
+              </tr>
+              </thead>
+              <tbody>
+              <tr *ngFor="let service of (services)">
+                <td>{{service.serviceInstanceName}}</td>
+                <td>{{service.serviceName}}</td>
+                <td>{{service.plan}}</td>
+              </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="title">
+            <i class="dropdown icon"></i>
+            App & Service
+          </div>
+          <div class="content">
+            <table class="ui grey celled table">
+              <thead>
+              <tr>
+                <th>App</th>
+                <th>Service</th>
+              </tr>
+              </thead>
+              <tbody>
+              <tr *ngFor="let service of (servicesApps)">
+                <td>{{service.appName}}</td>
+                <td>{{service.serviceInstanceName}}</td>
+              </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="title">
+            <i class="dropdown icon"></i>
+            Network
+          </div>
+          <div class="content">
+            <table class="ui grey celled table">
+              <thead>
+              <tr>
+                <th>Source</th>
+                <th>Target</th>
+                <th>Port</th>
+              </tr>
+              </thead>
+              <tbody>
+              <tr *ngFor="let policy of (policies)">
+                <td>{{policy.source}}</td>
+                <td>{{policy.target}}</td>
+                <td>{{policy.port}}</td>
+              </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="title">
+            <i class="dropdown icon"></i>
+            App Rest API
+          </div>
+          <div class="content">
+            <table class="ui grey celled table">
+              <thead>
+              <tr>
+                <th>App</th>
+                <th>Test</th>
+              </tr>
+              </thead>
+              <tbody>
+              <tr *ngFor="let routing of (routings)">
+                <td>{{routing.serviceName}}</td>
+                <td><span class="gomodal" (click)="popModal(routing.serviceName)"><i class="write link icon"></i></span></td>
+              </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="title">
+            <i class="dropdown icon"></i>
+            Gateway
+          </div>
+          <div class="content">
+            <table class="ui grey celled table">
+              <thead>
+              <tr>
+                <th>destination service</th>
+                <th>URI</th>
+              </tr>
+              </thead>
+              <tbody>
+              <tr *ngFor="let routing of (routings)">
+                <td>{{routing.serviceName}}</td>
+                <td>http://apigateway{{routing.path}}</td>
+              </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="title">
+            <i class="dropdown icon"></i>
+            Registry
+          </div>
+          <div class="content">
+            <table class="ui grey celled table">
+              <thead>
+              <tr>
+                <th>Service</th>
+                <th>App</th>
+                <th>IP</th>
+              </tr>
+              </thead>
+              <tbody>
+              <tr *ngFor="let registry of (registries)">
+                <td>{{registry.serviceName}}</td>
+                <td>{{registry.appName}}</td>
+                <td>{{registry.ip}}</td>
+              </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="title">
+            <i class="dropdown icon"></i>
+            Configuration
+          </div>
+          <div class="content">
+            <table class="ui grey celled table">
+              <thead>
+              <tr>
+                <th>App</th>
+                <th>Properties</th>
+              </tr>
+              </thead>
+              <tbody>
+              <tr *ngFor="let congiguration of (configurations)">
+                <td>{{congiguration.appName}}</td>
+                <td>{{congiguration.properties}}</td>
+              </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="title">
+            <i class="dropdown icon"></i>
+            App Logging
+          </div>
+          <div class="content">
+            <app-log-console [apps]="apps"></app-log-console>
+          </div>
+
+          <!--<div class="title">-->
+            <!--<i class="dropdown icon"></i>-->
+            <!--Group Logging-->
+          <!--</div>-->
+          <!--<div class="content">-->
+            <!--<log-console [apps]="apps"></log-console>-->
+          <!--</div>-->
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+
+</div>
+
+<div class="ui fullscreen modal">
+  <i class="close icon"></i>
+  <div class="header">
+    API Specification
+  </div>
+  <div class="content">
+    <div class="description">
+      <iframe [src]="iframeSrc" height="300" width="300"></iframe>
+    </div>
+  </div>
+  <div class="actions">
+    <div class="ui black deny button">
+      Close
+    </div>
+    <!--<div class="ui positive right labeled icon button">-->
+    <!--<i class="checkmark icon"></i>-->
+    <!--</div>-->
+  </div>
+</div>
+

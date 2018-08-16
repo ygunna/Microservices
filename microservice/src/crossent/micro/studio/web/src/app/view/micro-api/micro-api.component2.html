@@ -1,0 +1,75 @@
+<h2 class="ui dividing header">마이크로서비스 API</h2>
+
+<div class="ui main container">
+
+  <div class="box-wrap">
+
+    <div class="ui stackable grid">
+      <div class="column">
+        <div class="ui small icon input">
+          <input type="text" placeholder="Name Search..." [(ngModel)]="searchName">
+          <i class="search icon"></i>
+        </div>
+
+        <table class="ui celled selectable table">
+          <thead>
+          <th class="left aligned">이름</th>
+          <th>버전</th>
+          <th>URL</th>
+          <th>설명</th>
+          <th>API</th>
+          </thead>
+          <tbody>
+          <tr *ngFor="let micro of (micros | searchFilter:searchName)">
+            <td class="left aligned">{{micro.name}}</td>
+            <td>{{micro.version}}</td>
+            <td>{{micro.url}}</td>
+            <td>{{micro.description}}</td>
+            <td>
+              <div class="ui left floated primary button" (click)="popModalFront(micro.id)">
+                API
+                <i class="right chevron icon"></i>
+              </div>
+            </td>
+          </tr>
+          </tbody>
+        </table>
+
+      </div>
+    </div>
+
+
+    <div class="ui stackable grid">
+      <div class="column">
+        <button class="fluid ui button" (click)="more()" [hidden]="isEnd">
+          <i class="icon angle down"></i>
+          more
+        </button>
+      </div>
+    </div>
+
+
+
+
+  </div>
+</div>
+
+<div class="ui fullscreen modal">
+  <i class="close icon"></i>
+  <div class="header">
+    API Specification
+  </div>
+  <div class="content">
+    <div class="description">
+      <iframe [src]="iframeSrc" height="300" width="300"></iframe>
+    </div>
+  </div>
+  <div class="actions">
+    <div class="ui black deny button">
+      Close
+    </div>
+    <!--<div class="ui positive right labeled icon button">-->
+    <!--<i class="checkmark icon"></i>-->
+    <!--</div>-->
+  </div>
+</div>

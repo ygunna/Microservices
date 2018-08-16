@@ -1,0 +1,159 @@
+<h2 class="ui dividing header">마이크로서비스 생성</h2>
+
+<div class="ui main container">
+
+  <div class="box-wrap wrap-p0">
+
+    <!-- create step 1 -->
+    <div [hidden]="step==2">
+      <div class="ui two top attached mini steps">
+        <div class="active step">
+          <i class="payment icon"></i>
+          <div class="content">
+            <div class="title">기본정보</div>
+          </div>
+        </div>
+        <div class="disabled step">
+          <i class="info icon"></i>
+          <div class="content">
+            <div class="title">추가정보</div>
+          </div>
+        </div>
+      </div>
+      <div class="ui attached segment">
+        <form class="ui form" #defaultForm="ngForm">
+          <div class="field" [class.error]="!(org.valid || org.pristine && !org.touched)">
+            <label>조직 <i class="red asterisk icon"></i></label>
+            <select class="ui fluid dropdown" id="org"
+                    required
+                    [(ngModel)]="microservice.org" name="org" (ngModelChange)="onChangeOrg()"
+                    #org="ngModel">
+              <option *ngFor="let org of orgs" [ngValue]="org">{{ org.entity.name }}</option>
+            </select>
+            <div [hidden]="org.valid || org.pristine && !org.touched" class="ui pointing right label red">
+              필수 선택 항목입니다.
+            </div>
+          </div>
+          <div class="field" [class.error]="!(space.valid || space.pristine && !space.touched)">
+            <label>스페이스 <i class="red asterisk icon"></i></label>
+            <select class="ui fluid dropdown" id="space"
+                    required
+                    [(ngModel)]="microservice.space" name="space"
+                    #space="ngModel">
+              <option *ngFor="let space of spaces" [ngValue]="space">{{ space.entity.name }}</option>
+            </select>
+            <div [hidden]="space.valid || space.pristine && !space.touched" class="ui pointing right label red">
+              필수 선택 항목입니다.
+            </div>
+          </div>
+          <div class="field" [class.error]="!(name.valid || name.pristine && !name.touched)">
+            <label>마이크로서비스명 <i class="red asterisk icon"></i></label>
+            <input type="text" placeholder="Name" id="name"
+                   required
+                   [(ngModel)]="microservice.name" name="name"
+                   #name="ngModel">
+            <div [hidden]="name.valid || name.pristine && !name.touched" class="ui pointing right label red">
+              필수 입력 항목입니다.
+            </div>
+          </div>
+          <div class="field" [class.error]="!(version.valid || version.pristine && !version.touched)">
+            <label>버전 <i class="red asterisk icon"></i></label>
+            <input type="text" placeholder="Version" id="version"
+                   required
+                   [(ngModel)]="microservice.version" name="version"
+                   #version="ngModel">
+            <div [hidden]="version.valid || version.pristine && !version.touched" class="ui pointing right label red">
+              필수 입력 항목입니다.
+            </div>
+          </div>
+          <div class="field">
+            <label>설명</label>
+            <textarea rows="2" placeholder="Description" [(ngModel)]="microservice.description" name="description"></textarea>
+          </div>
+          <div class="ui divider"></div>
+          <button class="ui primary button" (click)="Next()" [disabled]="!defaultForm.form.valid">Next</button>
+          <button class="ui button" [routerLink]="['/list']">Cancel</button>
+        </form>
+      </div>
+    </div>
+    <!-- create step 1 end -->
+
+    <!-- create step 2 -->
+    <div [hidden]="step==1">
+      <div class="ui two top attached mini steps">
+        <div class="disabled step">
+          <i class="payment icon"></i>
+          <div class="content">
+            <div class="title">기본정보</div>
+          </div>
+        </div>
+        <div class="active step">
+          <i class="info icon"></i>
+          <div class="content">
+            <div class="title">추가정보</div>
+          </div>
+        </div>
+      </div>
+      <div class="ui attached segment">
+        <form class="ui form">
+          <h5 class="ui dividing header">공개 선택</h5>
+          <div class="grouped fields">
+            <div class="field">
+              <div class="ui radio checkbox">
+                <input type="radio" name="visible" [value]="true" [(ngModel)]="microservice.visible" id="public">
+                <label for="public">public</label>
+              </div>
+            </div>
+            <div class="field">
+              <div class="ui radio checkbox">
+                <input type="radio" name="visible" [value]="false" [(ngModel)]="microservice.visible" id="private">
+                <label for="private">private</label>
+              </div>
+            </div>
+          </div>
+          <h5 class="ui dividing header">서비스 선택</h5>
+          <div class="grouped fields">
+            <!--<div class="field">
+              <div class="ui radio checkbox">
+                <input type="radio" name="service" [value]="1" [(ngModel)]="essential" id="essential">
+                <label for="essential">필수서비스 (gateway, registry)</label>
+              </div>
+            </div>-->
+            <div class="field">
+              <div class="ui radio checkbox">
+                <input type="radio" name="service" [value]="2" [(ngModel)]="essential" id="default">
+                <label for="default">기본서비스 (gateway, registry, config)</label>
+              </div>
+            </div>
+          </div>
+          <h5 class="ui dividing header">마이크로서비스 샘플 앱 선택</h5>
+          <div class="field">
+            <div class="ui checkbox">
+              <input type="checkbox" [(ngModel)]="frontend.checked" name="frontend">
+              <label>frontend web</label>
+            </div>
+          </div>
+          <div class="field">
+            <div class="ui checkbox">
+              <input type="checkbox" [(ngModel)]="backend.checked" name="backend">
+              <label>backend service</label>
+            </div>
+          </div>
+          <div class="ui divider"></div>
+          <a class="ui button" (click)="Previous()">
+            Previous
+          </a>
+          <a class="ui primary button" (click)="Create()">
+            Create
+          </a>
+          <a href="/" class="ui button">
+            Cancel
+          </a>
+        </form>
+      </div>
+    </div>
+    <!-- create step 2 end -->
+
+  </div>
+
+</div>

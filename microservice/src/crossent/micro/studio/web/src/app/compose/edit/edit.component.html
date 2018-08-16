@@ -1,0 +1,268 @@
+<h2 class="ui dividing header">마이크로서비스 수정</h2>
+
+<div class="ui main container fluid">
+
+  <div class="ui stackable grid">
+    <div class="fifteen wide column">
+      <div class="box-wrap">
+
+        <div class="ui styled1 fluid segment1">
+          <div class="title">
+            <form class="ui form">
+              <div class="fields">
+                <div class="seven wide field">
+                  <label>Name</label>
+                  <input type="text" [(ngModel)]="micro.name" name="name" #name="ngModel" maxlength="20" placeholder="Name">
+                </div>
+                <div class="six wide field">
+                  <label>Version</label>
+                  <input type="text" [(ngModel)]="micro.version" name="version" #version="ngModel"  maxlength="20" placeholder="Version">
+                </div>
+                <div class="three wide field">
+                  <label>Visibility</label>
+                  <select class="ui fluid dropdown"
+                          required
+                          [(ngModel)]="micro.visible" name="visible" #visible="ngModel">
+                    <option value="true">public</option>
+                    <option value="false">private</option>
+                  </select>
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+        <h4 class="ui top attached block header">
+          <div class="ui icon" data-tooltip="확대" data-inverted="" (click)="zoom('in')">
+            <i class="bordered tiny blue plus link icon"></i>
+          </div>
+          <div class="ui icon" data-tooltip="축소" data-inverted="" (click)="zoom('out')">
+            <i class="bordered tiny blue minus link icon"></i>
+          </div>
+          <div class="ui icon" data-tooltip="저장" data-inverted="" (click)="save()">
+            <i class="bordered tiny red save link icon"></i>
+          </div>
+          <div class="ui icon" data-tooltip="시작" data-inverted="" *ngIf="micro.status=='STOPPED'" (click)="start()">
+            <i class="bordered tiny blue play link icon"></i>
+          </div>
+          <div class="ui icon" data-tooltip="정지" data-inverted="" *ngIf="micro.status=='STARTED'" (click)="stop()">
+            <i class="bordered tiny red stop link icon"></i>
+          </div>
+        </h4>
+        <div class="ui bottom attached segment" style="padding: 0">
+          <div id="chart" class="row" style="width:100%; height:650px;">
+            <svg #svg id="dropzone" width="100%" height="100%" appDroppable [droppedNodes]="nodes" [msaName]="micro.name">
+              <filter id="dropShadow" width="120%" height="140%">
+                <feGaussianBlur in="SourceAlpha" stdDeviation="2" />
+                <feOffset dx="2" dy="4" />
+                <feMerge>
+                  <feMergeNode />
+                  <feMergeNode in="SourceGraphic" />
+                </feMerge>
+              </filter>
+              <defs>
+                <marker id="end-arrow" viewBox="0 -5 10 10" refX="34" markerWidth="3.5" markerHeight="3.5" orient="auto">
+                  <path d="M0,-5L10,0L0,5" />
+                </marker>
+                <marker id="mark-end-arrow" viewBox="0 -5 10 10" refX="7" markerWidth="3.5" markerHeight="3.5" orient="auto">
+                  <path d="M0,-5L10,0L0,5" />
+                </marker>
+              </defs>
+              <g [zoomableOf]="svg">
+                <g [linkPath]="link" *ngFor="let link of links" class="g-link-path" [attr.id]="'link-'+link.id" (clickPath)="getLink($event)"></g>
+                <g *ngFor="let node of nodes">
+                  <g *ngIf="node.shape=='circle'" [nodeCircle]="node" (clickRemove)="removeNode($event)"
+                     [draggableNode]="node" [droppedNodes]="nodes" [linkPaths]="links" [attr.id]="node.id"></g>
+                  <g *ngIf="node.shape=='rect'" [nodeRect]="node" (clickRemove)="removeNode($event)"
+                     [draggableNode]="node" [droppedNodes]="nodes" [linkPaths]="links" [attr.id]="node.id"></g>
+                </g>
+              </g>
+            </svg>
+          </div>
+        </div>
+
+      </div>
+    </div>
+    <div class="five wide column" id="accordion" [hidden]="!accordion">
+      <div class="ui tab" data-tab="app">
+        <div class="ui top attached message">
+          <i class="close icon" (click)="closeMenu()"></i>
+          <h4 class="ui header">
+            App
+          </h4>
+        </div>
+        <div class="ui bottom attached segment">
+          <div class="ui small icon input" style="width:100%;">
+            <input type="text" placeholder="Search Apps..." [(ngModel)]="searchAppName" (keyup.enter)="searchApps(searchAppName)">
+            <i class="search icon" (click)="searchApps(searchAppName)"></i>
+          </div>
+          <table class="ui grey celled table center aligned">
+            <thead>
+            <tr>
+              <th>Name</th>
+              <th>Status</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr *ngFor="let app of marketApps">
+              <td><p [attr.id]="app.id" [appDraggable]="app" data-shape="circle" data-color="rgb(155,208,198)" data-type="App" class="drag-item">{{ app.name }}</p></td>
+              <td>{{ app.state }}</td>
+            </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="ui tab" data-tab="service">
+        <div class="ui top attached message">
+          <i class="close icon" (click)="closeMenu()"></i>
+          <h4 class="ui header">
+            Service
+          </h4>
+        </div>
+        <div class="ui bottom attached segment">
+          <div class="ui small icon input" style="width:100%;">
+            <input type="text" placeholder="Search Services..." [(ngModel)]="searchServiceName" (keyup.enter)="searchServices(searchServiceName)">
+            <i class="search icon" (click)="searchServices(searchServiceName)"></i>
+          </div>
+          <table class="ui grey celled table center aligned">
+            <thead>
+            <tr>
+              <th>Label</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr *ngFor="let service of marketServices">
+              <td><p [attr.id]="service.id" [appDraggable]="service" data-shape="circle" data-color="rgb(177,130,186)" data-type="Service" class="drag-item">{{ service.label }}</p></td>
+            </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="ui tab" data-tab="network">
+        <div class="ui top attached message">
+          <i class="close icon" (click)="closeMenu()"></i>
+          <h4 class="ui header">
+            Network
+          </h4>
+        </div>
+        <div class="ui bottom attached segment">
+          <form class="ui form">
+            <div class="field">
+              <label>Source</label>
+              <input type="text" name="source" placeholder="Source" [value]="viewNetwork.source.name">
+            </div>
+            <div class="field">
+              <label>Target</label>
+              <input type="text" name="target" placeholder="Target" [value]="viewNetwork.target.name">
+            </div>
+            <div class="field">
+              <label>Protocol</label>
+              <select class="ui search dropdown" name="protocol" [(ngModel)]="viewNetwork.protocol" #protocol="ngModel">
+                <option value="tcp">TCP</option>
+                <option value="udp">UDP</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>Port</label>
+              <input type="text" name="port" placeholder="Port" [(ngModel)]="viewNetwork.port" #port="ngModel">
+            </div>
+          </form>
+        </div>
+      </div>
+      <div class="ui tab" data-tab="routing">
+        <div class="ui top attached message">
+          <i class="close icon" (click)="closeMenu()"></i>
+          <h4 class="ui header">
+            Routing
+          </h4>
+        </div>
+        <div class="ui bottom attached segment">
+          <table class="ui grey celled table center aligned">
+            <thead>
+            <tr>
+              <th>Service</th>
+              <th>Path</th>
+              <th></th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr *ngFor="let route of routes; let i = index;">
+              <td>
+                <div class="ui input">
+                  <input type="text" [(ngModel)]="route.service" name="serviceId{{ i+1 }}" #serviceId="ngModel" placeholder="Service ID">
+                </div>
+              </td>
+              <td>
+                <div class="ui input">
+                  <input type="text" [(ngModel)]="route.path" name="path{{ i+1 }}" #path="ngModel" placeholder="Path">
+                </div>
+              </td>
+              <td *ngIf="i==routes.length-1"><i class="plus blue icon" (click)="addRoute()"></i></td>
+              <td *ngIf="i!=routes.length-1"><i class="minus red icon" (click)="removeRoute(route)"></i></td>
+            </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="ui tab" data-tab="config">
+        <div class="ui top attached message">
+          <i class="close icon" (click)="closeMenu()"></i>
+          <h4 class="ui header">
+            Config
+          </h4>
+        </div>
+        <div class="ui bottom attached segment">
+          <table class="ui grey celled table center aligned">
+            <thead>
+            <tr>
+              <th>App</th>
+              <th>Properties</th>
+              <th></th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr *ngFor="let config of configs; let i = index;">
+              <td>
+                <div class="ui input">
+                  <input type="text" [(ngModel)]="config.app" name="app{{ i+1 }}" #key="ngModel" placeholder="App">
+                </div>
+              </td>
+              <td>
+                <div class="ui input">
+                  <input type="text" [(ngModel)]="config.property" name="property{{ i+1 }}" #value="ngModel" placeholder="Property">
+                </div>
+              </td>
+              <td *ngIf="i==configs.length-1"><i class="plus blue icon" (click)="addConfig()"></i></td>
+              <td *ngIf="i!=configs.length-1"><i class="minus red icon" (click)="deleteConfig(i)"></i></td>
+            </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    <div class="one wide column">
+      <div class="ui vertical labeled icon menu" (click)="openMenu($event)">
+        <a class="item" data-tab="app" #tabApp>
+          <i class="cube icon"></i>
+          App
+        </a>
+        <a class="item" data-tab="service" #tabService>
+          <i class="cubes icon"></i>
+          Service
+        </a>
+        <a class="item" data-tab="network" #tabNetwork>
+          <i class="signal icon"></i>
+          Network
+        </a>
+        <a class="item" data-tab="routing" #tabRouting>
+          <i class="map signs icon"></i>
+          Routing
+        </a>
+        <a class="item" data-tab="config" #tabConfig>
+          <i class="write icon"></i>
+          Config
+        </a>
+      </div>
+    </div>
+  </div>
+
+</div>

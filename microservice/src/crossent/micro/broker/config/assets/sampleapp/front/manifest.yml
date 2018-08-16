@@ -1,0 +1,12 @@
+---
+applications:
+  - name: front
+    memory: 1G
+    path: front-0.0.1-SNAPSHOT.jar
+    env:
+      msa: true
+#    services:
+#    - config-server
+#    - registry-server
+#    env:
+#      SPRING_CLOUD_CONFIG_TOKEN: 37757f18-94e7-7063-31c8-02b5d5cbc76e

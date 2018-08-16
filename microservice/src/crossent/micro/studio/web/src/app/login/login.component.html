@@ -1,0 +1,33 @@
+<div class="page-login">
+  <div class="ui centered grid container">
+    <div class="nine wide column">
+      <!--<div class="ui icon warning message">-->
+        <!--<i class="lock icon"></i>-->
+        <!--<div class="content">-->
+          <!--<div class="header">-->
+            <!--Login failed!-->
+          <!--</div>-->
+          <!--<p>username or password</p>-->
+        <!--</div>-->
+      <!--</div>-->
+      <div class="ui fluid card">
+        <div class="content">
+          <form class="ui form" method="POST">
+            <div class="field">
+              <label>User</label>
+              <input type="text" name="username" placeholder="User" [(ngModel)]="username">
+            </div>
+            <div class="field">
+              <label>Password</label>
+              <input type="password" name="password" placeholder="Password" [(ngModel)]="password">
+            </div>
+            <a class="ui primary labeled icon button" (click)="login()">
+              <i class="unlock alternate icon"></i>
+              Login
+            </a>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

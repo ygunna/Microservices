@@ -1,0 +1,9 @@
+:host(app-create) {
+  padding-top: 0;
+  padding-bottom: 0;
+  display: grid;
+}
+
+[hidden] {
+  display: none !important;
+}

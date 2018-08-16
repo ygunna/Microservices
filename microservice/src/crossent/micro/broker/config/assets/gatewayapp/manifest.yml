@@ -1,0 +1,9 @@
+applications:
+  - name: gatewayserver
+    memory: 1G
+    path: gateway-0.0.1-SNAPSHOT.jar
+    env:
+      msa: true
+#    services:
+#    - registry-server
+#    - config-server

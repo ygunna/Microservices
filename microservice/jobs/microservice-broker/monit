@@ -1,0 +1,5 @@
+check process microservice-broker
+  with pidfile /var/vcap/sys/run/microservice-broker/microservice-broker.pid
+  start program "/var/vcap/jobs/microservice-broker/bin/microservice-broker_ctl start"
+  stop program "/var/vcap/jobs/microservice-broker/bin/microservice-broker_ctl stop"
+  group vcap

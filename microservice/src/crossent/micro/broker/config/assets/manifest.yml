@@ -1,0 +1,10 @@
+applications:
+  - name: configserver
+    memory: 1G
+    path: configapp/config-0.0.1-SNAPSHOT.jar
+  - name: registryserver
+    memory: 1G
+    path: registryapp/registry-0.0.1-SNAPSHOT.jar
+  - name: apiserver
+    memory: 1G
+    path: apiapp/api-0.0.1-SNAPSHOT.jar

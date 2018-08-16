@@ -1,0 +1,5 @@
+:host(app-layout-header) {
+  padding-top: 0;
+  /*padding-bottom: 3em;*/
+  display: grid;
+}

@@ -1,0 +1,23 @@
+<div class="ui fixed inverted menu">
+  <div class="ui">
+    <p class="header item">
+      MsXpert
+    </p>
+  </div>
+  <div class="ui container">
+    <a routerLink="/list" class="item" [routerLinkActive]="['active']">Microservice</a>
+    <a routerLink="/guide" class="item" [routerLinkActive]="['active']">Docs</a>
+  </div>
+  <div [hidden]="buttonHide" class="right menu">
+    <div class="item">
+      <p>{{ username }}</p>
+    </div>
+    <div class="item">
+      <a (click)="logout()" class="ui inverted button">Logout</a>
+    </div>
+  </div>
+</div>
+
+<div class="ui page inverted active dimmer" [class.active]="isActive">
+  <div class="ui text loader">Loading</div>
+</div>

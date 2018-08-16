@@ -1,0 +1,38 @@
+.node {
+  cursor: pointer;
+  transition: stroke-width 0.1s ease-out,
+  fill 0.1s ease-out,
+  stroke 0.1s ease-out;
+
+  stroke: rgb(105, 128, 163);
+  stroke-width: 2;
+}
+
+.node-type {
+  text-anchor: middle;
+  alignment-baseline: central;
+  font-weight: 300;
+  fill: white;
+}
+.node-name {
+  text-anchor: left;
+  alignment-baseline: central;
+  font-weight: 300;
+  fill: black;
+}
+
+.active {
+  /*stroke: #0000ff;*/
+  /*stroke-width: 2px;*/
+  filter: url(#dropShadow);
+}
+
+.invisible {
+  visibility: hidden;
+}
+.visible {
+  visibility: visible;
+}
+.delete-node {
+  cursor: pointer;
+}

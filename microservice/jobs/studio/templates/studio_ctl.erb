@@ -1,0 +1,115 @@
+#!/bin/bash
+# vim: set ft=sh
+
+set -e
+
+<%
+  require "shellwords"
+
+  def esc(x)
+    Shellwords.shellescape(x)
+  end
+%>
+
+RUN_DIR=/var/vcap/sys/run/studio
+LOG_DIR=/var/vcap/sys/log/studio
+PIDFILE=$RUN_DIR/studio.pid
+
+
+source /var/vcap/packages/pid_utils/pid_utils.sh
+
+<%
+  postgres_host = ""
+  postgres_port = ""
+  postgres_role_name = ""
+  postgres_role_password = ""
+  postgres_database = ""
+  postgres_sslmode = p("postgresql.sslmode", "verify-ca")
+
+  if_p("postgresql.address") do |addr|
+    postgres_host, postgres_port = addr.split(":")
+  end
+
+  postgres_host = p("postgresql.host", "")
+  postgres_port = p("postgresql.port")
+  postgres_database = p("postgresql.database")
+  postgres_role_name = p("postgresql.role.name")
+  postgres_role_password = p("postgresql.role.password", "")
+
+  if_link("db") do |db|
+    postgres_host = db.instances.first.address
+    postgres_port = db.p("bind_port")
+    postgres_database = p("postgresql_database")
+
+    postgres_db = db.p("databases").find { |db| db["name"] == postgres_database }
+    if postgres_db.nil?
+      raise "database '#{db_name}' not provided by 'postgresql' link"
+    end
+
+    postgres_role_name = postgres_db["role"]
+    postgres_role_password = postgres_db["password"]
+  end if postgres_host.empty?
+
+  if_link("postgres") do |l|
+    postgres_host = l.instances.first.address
+  end if postgres_host.empty?
+
+  if postgres_host.empty?
+    raise "postgres.host not set and no 'db' or 'postgres' link available"
+  end
+
+  postgres_sslmode = p("postgresql.sslmode", "disable")
+%>
+
+case $1 in
+
+  start)
+    pid_guard $PIDFILE "studio"
+
+    mkdir -p $RUN_DIR
+    chown -R vcap:vcap $RUN_DIR
+
+    mkdir -p $LOG_DIR
+    chown -R vcap:vcap $LOG_DIR
+
+    echo $$ > /var/vcap/sys/run/studio/studio.pid
+
+    setcap cap_net_bind_service=+ep /var/vcap/packages/studio/bin/studio
+
+    exec chpst -u vcap:vcap /var/vcap/packages/studio/bin/studio \
+      --bind-ip <%= p("bind_ip") %> \
+      --bind-port <%= p("bind_port") %> \
+      <% if_p("tls_bind_port", "tls_cert", "tls_key") do |port, _, _| %> \
+      --tls-bind-port <%= port %> \
+      --tls-cert /var/vcap/jobs/studio/config/tls_cert \
+      --tls-key /var/vcap/jobs/studio/config/tls_key \
+      <% end %> \
+      --postgres-host <%= esc(postgres_host) %> \
+      --postgres-port <%= esc(postgres_port) %> \
+      --postgres-database <%= esc(postgres_database) %> \
+      --postgres-sslmode <%= esc(postgres_sslmode) %> \
+      --postgres-user <%= esc(postgres_role_name) %> \
+      --postgres-password <%= esc(postgres_role_password) %> \
+      --api-url <%= p('cf.api_url') %> \
+      --uaa-url <%= p('cf.uaa_url') %> \
+      --username <%= p('cf.username') %> \
+      --password <%= p('cf.password') %> \
+      --skip-cert-check <%= p('cf.skip_cert_check') %> \
+      --client_id <%= p('cf.client_id') %> \
+      --client_secret <%= p('cf.client_secret') %> \
+      1>>$LOG_DIR/studio.stdout.log \
+      2>>$LOG_DIR/studio.stderr.log
+
+    ;;
+
+  stop)
+    kill_and_wait $PIDFILE
+
+    ;;
+
+  *)
+    echo "Usage: $0 {start|stop}"
+
+    ;;
+
+esac

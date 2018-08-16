@@ -1,0 +1,29 @@
+<div class="ui form" [class.fullscreen-form]="isFullScreen">
+  <button class="ui compact icon basic button active" (click)="start()">
+    <i class="play icon"></i>
+  </button>
+  <button class="ui compact icon basic button"  (click)="stop()">
+    <i class="pause icon"></i>
+  </button>
+  <div class="ui divider"></div>
+  <div class="grouped fields">
+    <label>App</label>
+    <div class="field"  *ngFor="let app of (apps)">
+      <div class="ui checkbox">
+        <input type="checkbox" name="fruit" tabindex="0" (click)="logFilter($event, app.appName)">
+        <label>{{app.appName}}</label>
+      </div>
+    </div>
+  </div>
+  <div class="field console">
+    <label>Console <i (click)="toggleConsole()" [ngClass]="consoleIcon"></i></label>
+    <div class="console-area" #console id="console" [class.fullscreen-div]="isFullScreen" [class.white]="isStop">
+      <ul id="messages">
+        <li  *ngFor="let message of messages"><span class="appName">[{{message.timestamp | date:'HH:mm:ss.SSS'}}] [{{message.app_name}}] </span>{{message.message}}</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+
+

@@ -1,0 +1,121 @@
+---
+name: studio
+
+templates:
+  studio_ctl.erb: bin/studio_ctl
+
+packages:
+  - pid_utils
+  - studio
+
+consumes:
+  - name: db
+    type: postgresql
+    optional: true
+  - name: postgres
+    type: database
+    optional: true
+
+properties:
+  bind_ip:
+    description: |
+      IP address on which the Microservice should listen for HTTP traffic.
+    default: 0.0.0.0
+
+  bind_port:
+    description: |
+      Port on which the Microservice should listen for HTTP traffic.
+    default: 8080
+
+  tls_bind_port:
+    description: |
+      Port on which the Microservice should listen for HTTPS traffic.
+    default: 4443
+
+  tls_cert:
+    description: |
+      SSL cert to use for HTTPS.
+
+  tls_key:
+    description: |
+      SSL private key to use for encrypting HTTPS traffic.
+
+  postgresql_database:
+    description: |
+      Name of the database to use from the `postgresql` link.
+
+  postgresql.host:
+    description: |
+      IP address or DNS name of a PostgreSQL server to connect to.
+
+      If not specified, one will be autodiscovered via BOSH links.
+
+  postgresql.port:
+    description: |
+      Port on which to connect to the server specified by `postgresql.host`.
+
+      If `postgresql.host` is not specified, this will be autodiscovered via
+      BOSH links, along with the host.
+    default: 5432
+
+  postgresql.database:
+    description: |
+      Name of the database to use.
+    default: microservice
+
+  postgresql.role.name:
+    description: |
+      Name of role to connect with.
+    default: microservice
+
+  postgresql.role.password:
+    description: |
+      Password to use when connecting.
+
+  postgresql.sslmode:
+    description: |
+      Whether or not to use SSL. Defaults to `verify-ca` when `postgresql.address`
+      or `postgresql.host` is provided. Otherwise, defaults to `disable`.
+
+  postgresql.ca_cert:
+    type: certificate
+    description: |
+      CA certificate to verify the server against.
+
+  postgresql.client_cert:
+    type: certificate
+    description: |
+      Client certificate to use when connecting with the server.
+
+  postgresql.connect_timeout:
+    description: |
+      Dialing timeout, in Go duration format (1m = 1 minute). 0 means wait indefinitely.
+    default: 5m
+
+  cf.api_url:
+    description: cf api url
+    default: https://api.bosh-lite.com
+
+  cf.uaa_url:
+    description: cf uaa url
+    default: https://uaa.bosh-lite.com
+
+  cf.username:
+    description: cf api username
+    default: admin
+
+  cf.password:
+    description: cf api password
+    default: dgdbjgsryp75urjg4gwf
+
+  cf.skip_cert_check:
+    description: cf skip_cert_check
+    default: false
+
+  cf.client_id:
+    description: cf client_id
+    default: micro
+
+  cf.client_secret:
+    description: cf client_secret
+    default: micro-secret

@@ -1,0 +1,54 @@
+<h2 class="ui tab active dividing header" data-tab="first">마이크로서비스 목록</h2>
+<h2 class="ui tab dividing header" data-tab="second">마이크로서비스 앱 개발 가이드</h2>
+
+<div class="ui main container">
+
+  <div class="box-wrap">
+
+    <div class="column">
+      <div class="ui small icon input">
+        <input type="text" placeholder="Search..." [(ngModel)]="searchName">
+        <i class="search icon"></i>
+      </div>
+      <a class="ui right floated primary button" routerLink="/create" routerLinkActive="active">
+        Add
+      </a>
+
+      <table class="ui celled selectable table">
+        <thead>
+        <th class="left aligned">조직</th>
+        <th>스페이스</th>
+        <th>이름</th>
+        <th>버전</th>
+        <th>설명</th>
+        <th>앱</th>
+        <th>서비스</th>
+        <th>상태</th>
+        </thead>
+        <tbody>
+        <tr *ngFor="let micro of (micros | searchFilter:searchName)">
+          <td class="left aligned">{{micro.orgName}}</td>
+          <td>{{micro.spaceName}}</td>
+          <td><a routerLink="/detail/{{micro.id}}" routerLinkActive="active">{{micro.name}}</a></td>
+          <td>{{micro.version}}</td>
+          <td>{{micro.description}}</td>
+          <td>{{micro.app}}</td>
+          <td>{{micro.service}}</td>
+          <td>{{micro.status}}</td>
+        </tr>
+        </tbody>
+      </table>
+      <button class="fluid ui button" (click)="more()" [hidden]="isEnd">
+        <i class="icon angle down"></i>
+        more
+      </button>
+    </div>
+
+
+
+
+  </div>
+
+</div>
+
+

@@ -1,0 +1,50 @@
+#!/bin/bash
+# vim: set ft=sh
+
+set -e
+
+
+JOB_DIR=/var/vcap/jobs/microservice-broker
+RUN_DIR=/var/vcap/sys/run/microservice-broker
+LOG_DIR=/var/vcap/sys/log/microservice-broker
+PIDFILE=$RUN_DIR/microservice-broker.pid
+
+source /var/vcap/packages/pid_utils/pid_utils.sh
+
+export PATH=$PATH:/var/vcap/packages/cf-cli/bin
+export CF_HOME=/home/vcap
+
+case $1 in
+
+  start)
+    pid_guard $PIDFILE "microservice-broker"
+
+    mkdir -p $RUN_DIR
+    chown -R vcap:vcap $RUN_DIR
+
+    mkdir -p $LOG_DIR
+    chown -R vcap:vcap $LOG_DIR
+
+    echo $$ > /var/vcap/sys/run/microservice-broker/microservice-broker.pid
+
+    setcap cap_net_bind_service=+ep /var/vcap/packages/microservice-broker/bin/microservice-broker
+
+    exec chpst -u vcap:vcap /var/vcap/packages/microservice-broker/bin/microservice-broker \
+      --configPath $JOB_DIR/config/broker.yml \
+      --appPath /var/vcap/packages/microservice-broker/src/crossent/micro/broker/config/assets \
+      1>>$LOG_DIR/atc.stdout.log \
+      2>>$LOG_DIR/atc.stderr.log
+
+    ;;
+
+  stop)
+    kill_and_wait $PIDFILE
+
+    ;;
+
+  *)
+    echo "Usage: $0 {start|stop}"
+
+    ;;
+
+esac

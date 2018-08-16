@@ -1,0 +1,5 @@
+configapp/*.jar
+gatewayapp/*.jar
+registryapp/*.jar
+sampleapp/front/*.jar
+sampleapp/back/*.jar

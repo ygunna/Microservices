@@ -1,0 +1,71 @@
+---
+name: studio
+
+dependencies:
+  - golang
+
+files:
+  - crossent/micro/studio/bindata.go
+  - crossent/micro/studio/**/*.go
+  - vendor/code.cloudfoundry.org/cfhttp/**/*.go # gosub
+  - vendor/code.cloudfoundry.org/lager/*.go # gosub
+  - vendor/github.com/alexedwards/scs/*.go # gosub
+  - vendor/github.com/alexedwards/scs/stores/cookiestore/*.go # gosub
+  - vendor/github.com/bmizerany/pat/*.go # gosub
+  - vendor/github.com/concourse/cf-resource/*.go # gosub
+  - vendor/github.com/elazarl/go-bindata-assetfs/*.go # gosub
+  - vendor/github.com/jessevdk/go-flags/*.go # gosub
+  - vendor/github.com/tedsuo/ifrit/*.go # gosub
+  - vendor/github.com/tedsuo/ifrit/grouper/*.go # gosub
+  - vendor/github.com/tedsuo/ifrit/http_server/*.go # gosub
+  - vendor/github.com/tedsuo/ifrit/sigmon/*.go # gosub
+  - vendor/github.com/tedsuo/rata/*.go # gosub
+  - vendor/golang.org/x/crypto/bcrypt/*.go # gosub
+  - vendor/golang.org/x/crypto/blowfish/*.go # gosub
+  - vendor/golang.org/x/crypto/nacl/secretbox/*.go
+  - vendor/golang.org/x/crypto/poly1305/*
+  - vendor/golang.org/x/crypto/salsa20/salsa/*
+  - vendor/golang.org/x/net/context/*.go # gosub
+  - vendor/golang.org/x/oauth2/*.go # gosub
+  - vendor/golang.org/x/oauth2/github/*.go # gosub
+  - vendor/golang.org/x/oauth2/internal/*.go # gosub
+  - vendor/golang.org/x/sync/syncmap/*.go # gosub
+  - vendor/gopkg.in/yaml.v2/*.go # gosub
+  - vendor/github.com/Masterminds/squirrel/*.go
+  - vendor/github.com/lann/builder/*.go
+  - vendor/github.com/lann/ps/*.go
+  - vendor/github.com/hashicorp/go-multierror/*.go
+  - vendor/github.com/hashicorp/go-multierror/vendor/github.com/hashicorp/errwrap/*.go
+  - vendor/github.com/lib/pq/*.go
+  - vendor/github.com/lib/pq/oid/*.go
+  - vendor/github.com/rs/cors/*.go
+  - vendor/github.com/cloudfoundry-community/go-cfclient/*.go
+  - vendor/golang.org/x/oauth2/clientcredentials/*.go
+  - vendor/github.com/pkg/errors/*.go
+  - vendor/github.com/Sirupsen/logrus/*.go
+  - vendor/github.com/cloudfoundry/noaa/*.go
+  - vendor/github.com/cloudfoundry/noaa/consumer/*.go
+  - vendor/github.com/cloudfoundry/noaa/consumer/internal/*.go
+  - vendor/github.com/cloudfoundry/noaa/errors/*.go
+  - vendor/github.com/cloudfoundry/sonde-go/events/*.go
+  - vendor/github.com/gorilla/websocket/*.go
+  - vendor/github.com/labstack/echo/*.go
+  - vendor/github.com/gogo/protobuf/proto/*.go
+  - vendor/github.com/gogo/protobuf/gogoproto/*.go
+  - vendor/github.com/gogo/protobuf/protoc-gen-gogo/descriptor/*.go
+  - vendor/github.com/labstack/gommon/color/*.go
+  - vendor/github.com/labstack/gommon/log/*.go
+  - vendor/github.com/mailru/easyjson/*.go
+  - vendor/github.com/mailru/easyjson/jlexer/*.go
+  - vendor/github.com/mailru/easyjson/jwriter/*.go
+  - vendor/github.com/mailru/easyjson/buffer/*.go
+  - vendor/github.com/mattn/go-colorable/*.go
+  - vendor/github.com/mattn/go-isatty/*.go
+  - vendor/github.com/dgrijalva/jwt-go/*.go
+  - vendor/github.com/pivotal-cf/uaa-sso-golang/uaa/*.go
+  - vendor/github.com/valyala/fasttemplate/*.go
+  - vendor/github.com/valyala/fasttemplate/vendor/github.com/valyala/bytebufferpool/*.go
+  - vendor/golang.org/x/crypto/acme/autocert/*.go
+  - vendor/golang.org/x/crypto/acme/*.go
+  - vendor/code.cloudfoundry.org/bytefmt/*.go
+

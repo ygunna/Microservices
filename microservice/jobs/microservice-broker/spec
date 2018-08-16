@@ -1,0 +1,50 @@
+---
+name: microservice-broker
+
+templates:
+  microservice-broker_ctl.erb: bin/microservice-broker_ctl
+  broker.yml.erb: config/broker.yml
+
+packages:
+  - pid_utils
+  - microservice-broker
+  - cf-cli
+
+properties:
+  broker.username:
+    description: microservice broker username
+    default: admin
+
+  broker.password:
+    description: microservice broker password
+    default: admin
+
+  broker.port:
+    description: microservice broker port
+    default: 3000
+
+  cf.api:
+    description: cf api url
+    default: https://api.bosh-lite.com
+
+  cf.username:
+    description: cf api username
+    default: admin
+
+  cf.password:
+    description: cf api password
+    default: dgdbjgsryp75urjg4gwf
+
+  cf.organization:
+    description: cf organization
+    default: ""
+
+  cf.space:
+    description: cf space
+    default: ""
+
+  cf.skip_cert_check:
+    description: cf skip_cert_check
+    default: false
+
+

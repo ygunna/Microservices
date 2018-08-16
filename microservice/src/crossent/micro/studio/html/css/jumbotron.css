@@ -1,0 +1,23 @@
+body {
+  padding-top: 3.5rem;
+}
+
+.sub-title {
+  padding: 0.6rem 1rem 0.3rem 1rem;
+  margin-bottom: 2rem;
+  background-color: #e9ecef;
+  border-radius: 0.3rem;
+}
+
+#editor { 
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  height: 540px;
+}
+
+#explorer {
+  height: 500px;
+}

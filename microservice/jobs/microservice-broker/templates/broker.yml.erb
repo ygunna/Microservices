@@ -1,0 +1,45 @@
+---
+service:
+- service_name: micro-config-server
+  service_id: 64aca71f-f2e9-4f3d-8e0e-9a3e1e5e3bb6
+  display_name: configapp
+  description: config-server microservice.
+  long_description: config-server microservice.
+  plan_id: 334744a3-f12f-4004-a94e-d7132a0d0706
+  icon_image:
+  provider_display_name: Crossent
+  documentation_url: http://www.crossent.com
+  support_url: http://www.crossent.com
+  tags: [configuration, spring-cloud]
+- service_name: micro-registry-server
+  service_id: 64aca71f-f2e9-4f3d-8e0e-9a3e1e5e3bb7
+  display_name: registryapp
+  description: registry-server microservice.
+  long_description: registry-server microservice.
+  plan_id: 334744a3-f12f-4004-a94e-d7132a0d0707
+  icon_image:
+  provider_display_name: Crossent
+  documentation_url: http://www.crossent.com
+  support_url: http://www.crossent.com
+  tags: [eureka, discovery, registry, spring-cloud]
+- service_name: micro-gateway-server
+  service_id: 64aca71f-f2e9-4f3d-8e0e-9a3e1e5e3bb8
+  display_name: gatewayapp
+  description: api-server microservice.
+  long_description: api-server microservice.
+  plan_id: 334744a3-f12f-4004-a94e-d7132a0d0708
+  icon_image:
+  provider_display_name: Crossent
+  documentation_url: http://www.crossent.com
+  support_url: http://www.crossent.com
+  tags: [zuul, spring-cloud]
+
+broker_username: <%= p('broker.username') %>
+broker_password: <%= p('broker.password') %>
+port: <%= p('broker.port') %>
+api: <%= p('cf.api') %>
+username: <%= p('cf.username') %>
+password: <%= p('cf.password') %>
+organization: <%= p('cf.organization') %>
+space: <%= p('cf.space') %>
+skip_cert_check: <%= p('cf.skip_cert_check') %>

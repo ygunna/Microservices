@@ -1,0 +1,109 @@
+<h2 class="ui tab active dividing header" data-tab="first">마이크로서비스 앱 개발 가이드</h2>
+<h2 class="ui tab dividing header" data-tab="second">마이크로서비스 앱 개발 가이드</h2>
+
+<div class="ui main container">
+
+  <div class="box-wrap">
+
+
+    <div class="ui pointing secondary menu">
+      <a class="item active" data-tab="first">Guide</a>
+      <a class="item" data-tab="second">Source</a>
+    </div>
+
+    <div class="ui tab active" data-tab="first">
+
+      <div class="column">
+
+        <h4 class="ui header">manifest.yml</h4>
+        <p>paas-ta를 통해 cloudfoundry에 app을 push 할때 사용하는 설정파일</p>
+        <p>필수 환경설정변수 msa: true </p>
+        <div class="ui floating message">
+          <pre>
+---
+applications:
+  - name: front
+    memory: 1G
+    path: target/front-0.0.1-SNAPSHOT.jar
+    env:
+      msa: true</pre>
+        </div>
+
+        <div class="ui divider"></div>
+
+        <h4 class="ui header">pom.xml</h4>
+        <p>java spring boot, cloud 기반 코딩을 위한 필수 dependency</p>
+        <div class="ui floating message">
+          <pre>
+            <code class="code java">
+spring-boot-starter-parent
+spring-cloud-starter-config
+spring-cloud-starter-eureka
+springfox-swagger2
+springfox-swagger-ui
+spring-cloud-services-cloudfoundry-connector
+spring-cloud-services-spring-connector</code>
+          </pre>
+        </div>
+
+        <div class="ui divider"></div>
+
+        <h4 class="ui header">annotation</h4>
+        <p>java spring cloud 의 eureka와 rest api 명세를 위한 swagger 필수 annotation </p>
+        <div class="ui floating message">
+          <pre>
+@EnableDiscoveryClient  // Eureka client
+
+@EnableSwagger2  // swagger</pre>
+        </div>
+
+        <div class="ui divider"></div>
+
+        <h4 class="ui header">bootstrap.properties</h4>
+        <p>src/main/resources/bootstrap.properties</p>
+        <div class="ui floating message">
+          <pre>
+spring.application.name=앱이름</pre>
+        </div>
+
+        <div class="ui divider"></div>
+
+        <h4 class="ui header">application.properties</h4>
+        <p>src/main/resources/application.properties</p>
+        <div class="ui floating message">
+          <pre>
+eureka.instance.hostname={{CF_INSTANCE_INTERNAL_IP}}
+eureka.instance.nonSecurePort={{PORT}}</pre>
+        </div>
+
+      </div>
+    </div>
+
+    <div class="ui tab" data-tab="second">
+      <div>
+        <a class="ui labeled icon button" href="/public/assets/code/frontend.zip" target="_blank">
+          <i class="download icon"></i>
+          frontend Download ZIP
+        </a>
+        <a class="ui labeled icon button" href="/public/assets/code/backend.zip" target="_blank">
+          <i class="download icon"></i>
+          backend Download ZIP
+        </a>
+      </div>
+
+      <div class="ui stackable celled grid">
+        <div class="five wide column explorer">
+          <div id="explorer" #explorer>
+          </div>
+        </div>
+        <div class="eleven wide column">
+          <codemirror [(ngModel)]="text" [config]="codeconfig"></codemirror>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+</div>
+
+

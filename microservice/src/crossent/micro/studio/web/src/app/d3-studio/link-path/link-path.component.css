@@ -1,0 +1,39 @@
+path.link-path {
+  fill: none;
+  stroke: #333;
+  stroke-width: 3px;
+  cursor: pointer;
+}
+path.link-path.app {
+  stroke: rgb(155, 208, 198);
+}
+path.link-path.service {
+  stroke: rgb(177, 130, 186);
+  stroke-dasharray: 3;
+}
+
+path.link-path:hover{
+  stroke: rgb(94, 196, 204);
+}
+
+path.link-path.hidden{
+  stroke-width: 0;
+}
+
+path.link-path.selected {
+  /*stroke: rgb(229, 172, 247);*/
+  animation: flickering 1s ease infinite;
+  -moz-animation: flickering 1s ease infinite;
+  -webkit-animation: flickering 1s ease infinite;
+}
+@keyframes flickering {
+  0%,
+  100% {
+    stroke: rgb(236, 174, 0);
+    /*stroke-opacity:1;*/
+  }
+  50% {
+    stroke: rgb(255, 103, 0);
+    /*stroke-opacity:0.5;*/
+  }
+}

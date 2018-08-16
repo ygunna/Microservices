@@ -1,0 +1,10 @@
+#explorer {
+  height: 550px;
+  width: 300px;
+  overflow: auto;
+}
+
+.five.wide.column.explorer {
+  position: inherit;
+  width: 300px !important;
+}

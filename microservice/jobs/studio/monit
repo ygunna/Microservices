@@ -1,0 +1,5 @@
+check process studio
+  with pidfile /var/vcap/sys/run/studio/studio.pid
+  start program "/var/vcap/jobs/studio/bin/studio_ctl start"
+  stop program "/var/vcap/jobs/studio/bin/studio_ctl stop"
+  group vcap

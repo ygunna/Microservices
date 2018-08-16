@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <title>MsXpert</title>
+
+    <link href="semantic/dist/semantic.min.css" rel="stylesheet">
+    <link href="css/main.css" rel="stylesheet">
+  </head>
+
+  <body>
+
+    <div class="ui fixed inverted menu">
+      <div class="ui">
+        <a href="microservice.html" class="header item">
+          MsXpert
+        </a>
+      </div>
+    </div> 
+    
+    <div class="ui main container">
+      <h2 class="ui dividing header">마이크로서비스 생성</h2> 
+
+      <div class="ui two top attached mini steps">
+        <div class="disabled step">
+          <i class="payment icon"></i>
+          <div class="content">
+            <div class="title">기본정보</div>
+          </div>
+        </div>
+        <div class="active step">
+          <i class="info icon"></i>
+          <div class="content">
+            <div class="title">추가정보</div>
+          </div>
+        </div>
+      </div>      
+      <div class="ui attached segment">
+        <form class="ui form">
+            <h5 class="ui dividing header">공개 선택</h5>
+            <div class="grouped fields">
+              <div class="field">
+                <div class="ui radio checkbox">
+                  <input type="radio" name="fruit2" checked="" tabindex="0">
+                  <label>private</label>
+                </div>
+              </div>
+              <div class="field">
+                <div class="ui radio checkbox">
+                  <input type="radio" name="fruit2" tabindex="1">
+                  <label>public</label>
+                </div>
+              </div>
+            </div>
+            <h5 class="ui dividing header">서비스 선택</h5>
+            <div class="grouped fields">
+              <div class="field">
+                <div class="ui radio checkbox">
+                  <input type="radio" name="fruit" checked="" tabindex="0">
+                  <label>필수서비스 (gateway, registry)</label>
+                </div>
+              </div>
+              <div class="field">
+                <div class="ui radio checkbox">
+                  <input type="radio" name="fruit" tabindex="1">
+                  <label>기본서비스 (gateway, registry, config)</label>
+                </div>
+              </div>
+            </div>
+            <h5 class="ui dividing header">마이크로서비스 샘플 앱 선택</h5>
+            <div class="field">
+              <div class="ui checkbox">
+                <input type="checkbox" tabindex="2">
+                <label>frontend web</label>
+              </div>
+              <!-- <div class="ui green small label">
+                <i class="code icon"></i>
+                <a class="detail" href="code.html">Coding guide</a>
+              </div>               -->
+            </div> 
+            <div class="field">
+              <div class="ui checkbox">
+                <input type="checkbox" tabindex="3">
+                <label>backend service</label>
+              </div>
+              <!-- <div class="ui green small label">
+                <i class="code icon"></i>
+                <a class="detail" href="code.html">Coding guide</a>
+              </div> -->
+            </div>      
+            <div class="ui divider"></div>      
+            <a href="create-1.html" class="ui button">
+              Previous
+            </a>
+            <a href="edit.html" class="ui primary button">
+              Create
+            </a>
+            <a href="microservice.html" class="ui button">
+              Cancel
+            </a>
+          </form>
+      </div>      
+    </div>   
+
+
+    <script    src="https://code.jquery.com/jquery-3.1.1.min.js"    integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8="    crossorigin="anonymous"></script>
+    <script src="semantic/dist/semantic.min.js"></script>
+  </body>
+</html>

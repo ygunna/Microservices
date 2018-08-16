@@ -1,0 +1,88 @@
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <title>Jumbotron Template for Bootstrap</title>
+
+    <!-- Bootstrap core CSS -->
+    <link href="css/bootstrap.css" rel="stylesheet">
+    <link href="css/open-iconic-bootstrap.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jstree/3.2.1/themes/default/style.min.css" />
+
+    <!-- Custom styles for this template -->
+    <link href="css/jumbotron.css" rel="stylesheet">
+  </head>
+
+  <body>
+
+    <nav class="navbar navbar-expand-md navbar-dark fixed-top bg-dark">
+      <a class="navbar-brand" href="microservice.html">MsXpert</a>
+    </nav>
+    
+    <main role="main">
+    
+      <!-- Main jumbotron for a primary marketing message or call to action -->
+      <div class="sub-title">
+        <div class="container-fluid">
+          <h4>마이크로서비스 코딩 가이드</h4>
+        </div>
+      </div>
+    
+      <div class="container-fluid">
+          <h3>frontend web</h3>
+          <div class="card-group mb-3">
+            <div class="card col-3">
+              <div class="card-body">
+                  <div id="explorer">
+                    <ul>
+                      <li>Root node 1</li>
+                      <li>Root node 2</li>
+                    </ul>
+                  </div>
+              </div>
+            </div>
+            <div class="card">
+              <div class="card-body">
+                  <div id="editor">
+                      function foo(items) {
+                        var x = "All this is syntax highlighted";
+                        return x;
+                    }                    
+                  </div>
+              </div>
+            </div>
+          </div>  
+          <a href="create-2.html" class="btn btn-secondary">Previous</a>  
+          <a href="microservice.html" class="btn btn-secondary">Cancel</a>              
+    
+      </div>
+      <!-- /container -->
+    
+    </main>
+    
+
+
+
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+    <script src="js/bootstrap.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jstree/3.2.1/jstree.min.js"></script>
+    <script src="js/ace/ace.js" type="text/javascript" charset="utf-8"></script>
+    <script>
+      $(function() {
+        $('#explorer').jstree();
+        
+        var editor = ace.edit("editor");
+        editor.setTheme("ace/theme/monokai");
+        editor.setReadOnly(true);
+        editor.setFontSize(15);
+        editor.session.setMode("ace/mode/javascript");        
+      });
+    </script>    
+
+  </body>
+</html>

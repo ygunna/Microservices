@@ -1,0 +1,317 @@
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <title>Jumbotron Template for Bootstrap</title>
+
+    <!-- Bootstrap core CSS -->
+    <link href="css/bootstrap.css" rel="stylesheet">
+    <link href="css/open-iconic-bootstrap.css" rel="stylesheet">
+
+    <!-- Custom styles for this template -->
+    <link href="css/jumbotron.css" rel="stylesheet">
+  </head>
+
+  <body>
+
+    <nav class="navbar navbar-expand-md navbar-dark fixed-top bg-dark">
+      <a class="navbar-brand" href="microservice.html">MsXpert</a>
+    </nav>
+    
+    <main role="main">
+    
+      <!-- Main jumbotron for a primary marketing message or call to action -->
+      <div class="sub-title">
+        <div class="container-fluid">
+          <h4>마이크로서비스 수정</h4>
+        </div>
+      </div>
+    
+      <div class="container-fluid">
+          <div class="row">
+              <div class="col">
+                <div class="card border-secondary mb-5" style="height:700px;">
+                    <div class="card-header">
+                        <a href="microservice.html"><span class="oi oi-home mr-2"></span>Home</a> | <span class="oi oi-zoom-in"></span>확대 | <span class="oi oi-zoom-out"></span>축소 | <span class="oi oi-media-play mr-2"></span>Start | <span class="oi oi-media-stop mr-2"></span>Stop | <span class="oi oi-reload mr-2"></span>Refresh | <span class="oi oi-clipboard"></span>Save
+                    </div>
+                    <div id="chart" class="row" style="width:100%; height:700px; margin-left: 6px; overflow: auto"></div>
+                </div>        
+              </div>
+
+              <div class="col-md-2" style="display: none;"  id="accordion">
+                  <!-- <div> -->
+                      <div class="collapse mb-3" id="App" role="tabpanel">
+                          <div class="card border-secondary">
+                              <div class="card-header">
+                                  App
+                                  <button type="button" class="close" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                  </button>
+                              </div>
+                              <div class="card-body">
+                                <h5 class="card-title">조직</h5>
+                                <p class="card-text">org</p>
+                                <h5 class="card-title">스페이스</h5>
+                                <p class="card-text">space</p>
+                                <h5 class="card-title">App</h5>
+                                <div class="row">
+                                  <table class="table table-bordered table-hover table-sm">
+                                    <thead>
+                                      <tr class="table-active">
+                                        <th scope="col">이름</th>
+                                        <th scope="col">상태</th>
+                                      </tr>
+                                    </thead>
+                                    <tbody>
+                                      <tr>
+                                        <td>빅데이터 연동 테스트</td>
+                                        <td>RUNNING</td>
+                                      </tr>
+                                      <tr>
+                                        <td>빅데이터 연동 테스트</td>
+                                        <td>STOPPED</td>
+                                      </tr>
+                                      <tr>
+                                        <td>빅데이터 연동 테스트</td>
+                                        <td>STOPPED</td>
+                                      </tr>
+                                      <tr>
+                                        <td>빅데이터 연동 테스트</td>
+                                        <td>STOPPED</td>
+                                      </tr>
+                                      <tr>
+                                        <td>빅데이터 연동 테스트</td>
+                                        <td>STOPPED</td>
+                                      </tr>
+                                    </tbody>
+                                  </table>                                  
+                                </div>  
+                                <h5 class="card-title">Microservice App</h5>
+                                <div class="row">
+                                  <table class="table table-bordered table-hover table-sm">
+                                    <thead>
+                                      <tr class="table-active">
+                                        <th scope="col">이름</th>
+                                        <th scope="col">상태</th>
+                                      </tr>
+                                    </thead>
+                                    <tbody>
+                                      <tr>
+                                        <td>빅데이터 연동 테스트</td>
+                                        <td>RUNNING</td>
+                                      </tr>
+                                      <tr>
+                                        <td>빅데이터 연동 테스트</td>
+                                        <td>STOPPED</td>
+                                      </tr>
+                                      <tr>
+                                        <td>빅데이터 연동 테스트</td>
+                                        <td>STOPPED</td>
+                                      </tr>
+                                      <tr>
+                                        <td>빅데이터 연동 테스트</td>
+                                        <td>STOPPED</td>
+                                      </tr>
+                                      <tr>
+                                        <td>빅데이터 연동 테스트</td>
+                                        <td>STOPPED</td>
+                                      </tr>
+                                    </tbody>
+                                  </table>                                  
+                                </div>
+                              </div>
+                          </div>    
+                      </div>
+                      <div class="collapse mb-3" id="Service" role="tabpanel">
+                          <div class="card border-secondary">
+                              <div class="card-header">
+                                  Service
+                                  <button type="button" class="close" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                  </button>
+                              </div>
+                              <div class="card-body">
+                                <h5 class="card-title">Service</h5>
+                                <div class="row">
+                                  <table class="table table-bordered table-hover table-sm">
+                                    <thead>
+                                      <tr class="table-active">
+                                        <th scope="col">이름</th>
+                                      </tr>
+                                    </thead>
+                                    <tbody>
+                                      <tr>
+                                        <td>mysql</td>
+                                      </tr>
+                                      <tr>
+                                        <td>postgresql</td>
+                                      </tr>
+                                      <tr>
+                                        <td>rabbitmq</td>
+                                      </tr>
+                                      <tr>
+                                        <td>bigdata</td>
+                                      </tr>
+                                      <tr>
+                                        <td>openapi</td>
+                                      </tr>
+                                    </tbody>
+                                  </table>                                  
+                                </div>
+                              </div>
+                          </div>    
+                      </div>
+                      <div class="collapse mb-3" id="Network" role="tabpanel">
+                          <div class="card border-secondary">
+                              <div class="card-header">
+                                  Network
+                                  <button type="button" class="close" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                  </button>
+                              </div>
+                              <div class="card-body">
+                                <form>
+                                  <div class="form-group">
+                                    <label for="source">Source</label>
+                                    <input type="text" class="form-control" id="sourceInput" placeholder="source">
+                                  </div>
+                                  <div class="form-group">
+                                    <label for="target">Target</label>
+                                    <input type="text" class="form-control" id="targetInput" placeholder="target">
+                                  </div>
+                                  <div class="form-group">
+                                      <label for="target">Protocol</label>
+                                      <select class="custom-select mb-3">
+                                        <option selected>select</option>
+                                        <option value="tcp">tcp</option>
+                                        <option value="udp">udp</option>
+                                      </select>
+                                  </div>
+                                  <div class="form-group">
+                                    <label for="target">Port</label>
+                                    <input type="text" class="form-control" id="portInput" placeholder="port">
+                                  </div>
+                                  <button type="submit" class="btn btn-primary">Save</button>
+                                  <button type="submit" class="btn btn-primary">Delete</button>
+                                </form>
+                              </div>
+                          </div>    
+                      </div>
+                      <div class="collapse mb-3" id="Routing" role="tabpanel">
+                          <div class="card border-secondary">
+                              <div class="card-header">
+                                  Routing
+                                  <button type="button" class="close" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                  </button>
+                              </div>
+                              <div class="card-body">
+                                  <h5 class="card-title">Gateway routing</h5>
+                                  <div class="row">
+                                    <table class="table table-bordered table-hover table-sm">
+                                      <thead>
+                                        <tr class="table-active">
+                                          <th scope="col">service</th>
+                                          <th scope="col">path</th>
+                                          <th scope="col"></th>
+                                        </tr>
+                                      </thead>
+                                      <tbody>
+                                        <tr>
+                                          <td><input type="text" class="form-control" id="exampleInputPassword1" placeholder="name" value="back"></td>
+                                          <td><input type="text" class="form-control" id="exampleInputPassword1" placeholder="name" value="/api/**"></td>
+                                          <td><span class="oi oi-minus mr-2 align-bottom"></span></td>
+                                        </tr>
+                                        <tr>
+                                          <td><input type="text" class="form-control" id="exampleInputPassword1" placeholder="name" value="back2"></td>
+                                          <td><input type="text" class="form-control" id="exampleInputPassword1" placeholder="name" value="/api/a/**"></td>
+                                          <td><span class="oi oi-plus mr-2 align-bottom"></span></td>
+                                        </tr>
+                                      </tbody>
+                                    </table>                                  
+                                  </div>
+                                  <button type="submit" class="btn btn-primary">Save</button>
+                                  <button type="submit" class="btn btn-primary">Delete</button>
+                              </div>
+                          </div>    
+                      </div>
+                      <div class="collapse mb-3" id="Config" role="tabpanel">
+                          <div class="card border-secondary">
+                              <div class="card-header">
+                                  Config
+                                  <button type="button" class="close" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                  </button>
+                              </div>
+                              <div class="card-body">
+                                  <h5 class="card-title">Configuration</h5>
+                                  <div class="row">
+                                    <table class="table table-bordered table-hover table-sm">
+                                      <thead>
+                                        <tr class="table-active">
+                                          <th scope="col">App</th>
+                                          <th scope="col">Properties</th>
+                                          <th scope="col"></th>
+                                        </tr>
+                                      </thead>
+                                      <tbody>
+                                        <tr>
+                                          <td><input type="text" class="form-control" id="exampleInputPassword1" placeholder="name" value="back"></td>
+                                          <td><input type="text" class="form-control" id="exampleInputPassword1" placeholder="name" value="a=b"></td>
+                                          <td><span class="oi oi-minus mr-2 align-bottom"></span></td>
+                                        </tr>
+                                        <tr>
+                                          <td><input type="text" class="form-control" id="exampleInputPassword1" placeholder="name" value="back2"></td>
+                                          <td><input type="text" class="form-control" id="exampleInputPassword1" placeholder="name" value="c=d"></td>
+                                          <td><span class="oi oi-plus mr-2 align-bottom"></span></td>
+                                        </tr>
+                                      </tbody>
+                                    </table>                                  
+                                  </div>
+                                  <button type="submit" class="btn btn-primary">Save</button>
+                                  <button type="submit" class="btn btn-primary">Delete</button>
+                              </div>
+                          </div>    
+                      </div>
+                  <!-- </div> -->
+              </div>
+              <div class="col-md-1">
+                  <div class="btn-group-vertical list-group">
+                      <a data-toggle="list" href="#App" class="btn btn-outline-secondary">App</a>
+                      <a data-toggle="list" href="#Service" class="btn btn-outline-secondary">Service</a>
+                      <a data-toggle="list" href="#Network" class="btn btn-outline-secondary">Network</a>
+                      <a data-toggle="list" href="#Routing" class="btn btn-outline-secondary">Routing</a>
+                      <a data-toggle="list" href="#Config" class="btn btn-outline-secondary">Config</a>
+                  </div>                
+              </div>
+
+    
+      </div>
+      <!-- /container -->
+    
+    </main>
+    
+
+
+
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+    <script src="js/bootstrap.js"></script>
+    <script>
+      $(function() {
+        $('.list-group a').click(function () {
+          $('#accordion').show();
+        });
+
+        $('.card-header .close').click(function(){
+          $('#accordion').hide();
+          $('.list-group a').removeClass('active');
+        });
+      });
+    </script>
+  </body>
+</html>

@@ -1,0 +1,33 @@
+---
+name: broker-deregistrar
+packages:
+- cf-cli
+- jq
+
+templates:
+  run.sh: bin/run
+
+consumes:
+- name: servicebroker
+  type: servicebroker
+  optional: true
+- name: cf-admin-user
+  type: api-user
+  optional: true
+
+properties:
+  servicebroker.name:
+    description: 'Name of broker when deregistering'
+
+  cf.api_url:
+    description: 'Full URL of Cloud Foundry API'
+  cf.username:
+    description: 'Username of the admin user'
+  cf.password:
+    description: 'Password of the admin user'
+  cf.skip_ssl_validation:
+    description: 'Skip SSL validation when connecting to Cloud Foundry API'
+    default: false
+
+  catalog_version:
+    description: Force --when-changed by specifying a new version value

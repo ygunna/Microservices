@@ -1,0 +1,99 @@
+<h2 class="ui dividing header">마이크로서비스 API</h2>
+
+<div class="ui main container">
+
+  <div class="box-wrap">
+
+    <div class="ui stackable grid">
+      <div class="column">
+        <div class="ui small icon input">
+          <input type="text" placeholder="Name Search..." [(ngModel)]="searchName">
+          <i class="search icon"></i>
+        </div>
+
+        <div class="ui divider"></div>
+
+        <div class="ui divided items">
+          <div class="item" *ngFor="let micro of (micros | searchFilter:searchName)">
+            <div class="ui small image">
+              <svg version="1.1" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" style="background-color:#f3f3f2">
+                <line stroke="#81d0dd" stroke-width="2" opacity="0.3" x1="76" y1="48" x2="133" y2="73"></line>
+                <line stroke="rgb(248,106,64)" stroke-width="5" opacity="0.3" x1="58" y1="100" x2="140" y2="1"></line>
+                <line stroke="rgb(95,207,223)" stroke-width="3" opacity="0.3" x1="137" y1="108" x2="86" y2="6"></line>
+                <line stroke="#c6b" stroke-width="2" opacity="0.3" x1="-27" y1="107" x2="49" y2="38"></line>
+                <line stroke="#56aacd" stroke-width="1" opacity="0.3" x1="2" y1="68" x2="37" y2="-16"></line>
+                <line stroke="#4a0" stroke-width="1" opacity="0.3" x1="128" y1="134" x2="-3" y2="60"></line>
+                <line stroke="#2a7" stroke-width="5" opacity="0.3" x1="86" y1="58" x2="117" y2="9"></line>
+                <line stroke="#586fda" stroke-width="1" opacity="0.3" x1="63" y1="14" x2="8" y2="140"></line>
+                <line stroke="rgb(25,76,125)" stroke-width="5" opacity="0.3" x1="37" y1="74" x2="16" y2="140"></line>
+                <line stroke="rgb(51,31,55)" stroke-width="4" opacity="0.3" x1="13" y1="1" x2="65" y2="39"></line>
+                <line stroke="rgb(72,169,135)" stroke-width="5" opacity="0.3" x1="54" y1="143" x2="-44" y2="15"></line>
+                <line stroke="#d3c8a5" stroke-width="2" opacity="0.3" x1="50" y1="150" x2="-37" y2="39"></line>
+                <line stroke="#d4a52b" stroke-width="1" opacity="0.3" x1="108" y1="-6" x2="93" y2="103"></line>
+                <line stroke="rgb(63,84,84)" stroke-width="5" opacity="0.3" x1="69" y1="-36" x2="131" y2="81"></line>
+                <circle cx="56" cy="80" r="8" opacity="0.3" fill="#0c5"></circle>
+                <circle cx="6" cy="6" r="12" opacity="0.3" fill="#c50"></circle>
+              </svg>
+            </div>
+            <div class="content">
+              <a class="header">{{micro.name}}</a>
+              <div class="meta">
+                <span>{{micro.version}}</span>
+              </div>
+              <div class="extra">
+                {{micro.url}}
+              </div>
+              <div class="description">
+                <p>{{micro.description}}</p>
+              </div>
+              <div class="extra">
+                <div class="ui right floated primary button" (click)="popModalFront(micro.id)">
+                  API
+                  <i class="right chevron icon"></i>
+                </div>
+                <div class="ui label">{{micro.visible}}</div>
+                <div class="ui label" [class.orange]="micro.status.startsWith('STOP')">{{micro.status}}</div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <div class="ui divider"></div>
+
+    <div class="ui stackable grid">
+      <div class="column">
+        <button class="fluid ui button" (click)="more()" [hidden]="isEnd">
+          <i class="icon angle down"></i>
+          more
+        </button>
+      </div>
+    </div>
+
+
+
+
+  </div>
+</div>
+
+<div class="ui fullscreen modal">
+  <i class="close icon"></i>
+  <div class="header">
+    API Specification
+  </div>
+  <div class="content">
+    <div class="description">
+      <iframe [src]="iframeSrc" height="300" width="300"></iframe>
+    </div>
+  </div>
+  <div class="actions">
+    <div class="ui black deny button">
+      Close
+    </div>
+    <!--<div class="ui positive right labeled icon button">-->
+    <!--<i class="checkmark icon"></i>-->
+    <!--</div>-->
+  </div>
+</div>

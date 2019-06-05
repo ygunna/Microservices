@@ -1,0 +1,209 @@
+---
+name: msxpert-nipa
+
+releases:
+- name: msxpert-nipa
+  version: latest
+- name: postgres
+  version: 23
+  url: https://bosh.io/d/github.com/cloudfoundry/postgres-release?v=23
+  sha1: 4b5265bfd5f92cf14335a75658658a0db0bca927
+- name: haproxy
+  version: 9.3.0
+  url: https://github.com/cloudfoundry-incubator/haproxy-boshrelease/releases/download/v9.3.0/haproxy-9.3.0.tgz
+  sha1: 384de4ad378b940641a34cda1c63fdc02c901b8f
+
+stemcells:
+- alias: trusty
+  os: ubuntu-trusty
+  version: latest
+
+instance_groups:
+- name: studio-nipa
+  instances: 1
+  vm_type: small
+  vm_extensions: []
+  stemcell: trusty
+  azs: [z1]
+  networks: [{name: default}]
+  jobs:
+  - name: studio
+    release: msxpert-nipa
+    properties:
+      bind_ip: 0.0.0.0
+      bind_port: 8080
+      external_url: ((external_url))
+      postgresql:
+        database: &db_name microservice-nipa
+        role: &db_role
+          name: microservice
+          password: dummy-postgres-password
+      cf:
+        api_url: ((cf_api_url))
+        uaa_url : ((uaa_url))
+        username: ((cf_username))
+        password: ((cf_password))
+        skip_cert_check: ((cf_skip_cert_check))
+        client_id: micro
+        client_secret: micro-secret
+  - name: microservice-broker
+    release: msxpert-nipa
+    properties:
+      broker:
+        username: admin
+        password: admin
+        port: 3000
+      cf:
+        api: ((cf_api_url))
+        username: ((cf_username))
+        password: ((cf_password))
+        organization: org-micro
+        space: space-micro
+        skip_cert_check: ((cf_skip_cert_check))
+
+  - name: haproxy
+    release: haproxy
+    consumes:
+      http_backend: {from: haproxy_traefik}
+    properties:
+      ha_proxy:
+        backend_port: ((haproxy_backend_port))
+
+  - name: nginx
+    release: msxpert-nipa
+
+- name: db-nipa
+  instances: 1
+  vm_type: small
+  stemcell: trusty
+  persistent_disk_type: small #5GB
+  azs: [z1]
+  networks: [{name: default}]
+  jobs:
+  - name: postgres
+    release: postgres
+    properties:
+      databases:
+        port: 5432
+        databases:
+        - name: *db_name
+        roles:
+        - *db_role
+
+- name: broker-registrar-micro
+  instances: 1
+  azs: [z1]
+  lifecycle: errand
+  vm_type: small
+  stemcell: trusty
+  networks: [{name: default}]
+  jobs:
+  - name: broker-registrar
+    release: msxpert-nipa
+    properties:
+      servicebroker:
+        name: microservicebroker
+        username: admin
+        password: admin
+      cf:
+        api_url: ((cf_api_url))
+        username: ((cf_username))
+        password: ((cf_password))
+        skip_ssl_validation: ((cf_skip_cert_check))
+
+- name: broker-deregistrar-micro
+  instances: 1
+  azs: [z1]
+  lifecycle: errand
+  vm_type: small
+  stemcell: trusty
+  networks: [{name: default}]
+  jobs:
+  - name: broker-deregistrar
+    release: msxpert-nipa
+    properties:
+      servicebroker:
+        name: microservicebroker
+      cf:
+        api_url: ((cf_api_url))
+        username: ((cf_username))
+        password: ((cf_password))
+        skip_ssl_validation: ((cf_skip_cert_check))
+
+- name: traefik-nipa
+  instances: 1
+  azs: [z1]
+  stemcell: trusty
+  vm_type: small
+#  persistent_disk_type: small
+  env:
+    bosh: { swap_size: 0 }
+  networks: [{name: default}]
+  jobs:
+    - name: traefik
+      release: msxpert-nipa
+      provides:
+        traefik: {as: haproxy_traefik}
+      properties:
+        traefik:
+          log_level: DEBUG
+          access_logs: { enabled: true }
+          http: { enabled: true, port: ((haproxy_backend_port)) }
+          web:
+            enabled: true
+            basic_auth:
+              username: test
+              password: test1234
+          file:
+            enabled: true
+            watch: true
+            rules: |
+              [frontends]
+
+                [frontends.frontend1]
+                backend = "backend1"
+                  [frontends.frontend1.routes.test_1]
+                  rule = "Path:/api/customers"
+
+              [backends]
+
+                [backends.backend1]
+
+                    [backends.backend1.servers.server1]
+                      url = "http://node.bosh-lite.com"
+                      weight = 1
+
+- name: grafana-nipa
+  azs: [z1]
+  instances: 1
+  vm_type: small
+#  persistent_disk_type: small
+  stemcell: trusty
+  networks: [{name: default}]
+  jobs:
+    - name: grafana
+      release: msxpert-nipa
+      properties:
+        grafana:
+          auth:
+            proxy:
+              enabled: true
+              header_name: X-MSXPERTAUTH-USER
+              auto_sign_up: true
+          security:
+            admin_user: admin
+            admin_password: ((grafana_admin_password))
+
+  stemcell: trusty
+  vm_type: small
+#  persistent_disk_type: small
+  env:
+    bosh: { swap_size: 0 }
+  networks: [{name: default}]
+
+update:
+  canaries: 1
+  max_in_flight: 1
+  serial: false
+  canary_watch_time: 1000-60000
+  update_watch_time: 1000-60000

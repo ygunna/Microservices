@@ -35,6 +35,7 @@ func NewHandler(
 
 	handlers := map[string]http.Handler{
 		studio.ListOrg: http.HandlerFunc(microServer.ListOrg),
+		studio.ListManageOrg: http.HandlerFunc(microServer.ListManageOrg),
 		studio.ListOrgSpace: http.HandlerFunc(microServer.ListOrgSpace),
 		studio.ListSpace: http.HandlerFunc(microServer.ListSpace),
 		studio.ListApp: http.HandlerFunc(microServer.ListApp),
@@ -66,9 +67,25 @@ func NewHandler(
 		studio.Login: http.HandlerFunc(microServer.Login),
 		studio.Logout: http.HandlerFunc(microServer.Logout),
 
+		//studio.ListMicroserviceApi: http.HandlerFunc(microServer.ListMicroserviceApi),
+		//studio.GetMicroserviceApi: http.HandlerFunc(microServer.GetMicroserviceApi),
+		//studio.SaveMicroserviceApi: http.HandlerFunc(microServer.SaveMicroserviceApi),
+
 		studio.ListMicroserviceApi: http.HandlerFunc(microServer.ListMicroserviceApi),
 		studio.GetMicroserviceApi: http.HandlerFunc(microServer.GetMicroserviceApi),
-		studio.SaveMicroserviceApi: http.HandlerFunc(microServer.SaveMicroserviceApi),
+		studio.GetMicroserviceApiSwagger: http.HandlerFunc(microServer.GetMicroserviceApiSwagger),
+		studio.SaveMicroserviceApiSwagger: http.HandlerFunc(microServer.SaveMicroserviceApiSwagger),
+		studio.GetMicroserviceApiRule: http.HandlerFunc(microServer.GetMicroserviceApiRule),
+		studio.CreateMicroserviceApi: http.HandlerFunc(microServer.CreateMicroserviceApi),
+		studio.ListMicroserviceAppApi: http.HandlerFunc(microServer.ListMicroserviceAppApi),
+		studio.CreateMicroserviceAppApi: http.HandlerFunc(microServer.CreateMicroserviceAppApi),
+		studio.DeleteMicroserviceAppApi: http.HandlerFunc(microServer.DeleteMicroserviceAppApi),
+		studio.DeleteMicroserviceApi: http.HandlerFunc(microServer.DeleteMicroserviceApi),
+		studio.ListMicroserviceFrontend: http.HandlerFunc(microServer.ListMicroserviceFrontend),
+		studio.ListMicroserviceApiHealth: http.HandlerFunc(microServer.ListMicroserviceApiHealth),
+		studio.GetMicroserviceNameCheck: http.HandlerFunc(microServer.GetMicroserviceNameCheck),
+
+		studio.GetMicroserviceMonitoring: http.HandlerFunc(microServer.GetMicroserviceMonitoring),
 
 	}
 

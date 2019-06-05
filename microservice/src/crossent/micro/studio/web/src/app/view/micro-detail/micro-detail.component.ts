@@ -11,7 +11,6 @@ import { Node } from '../models/node.model';
 import { Link } from '../models/link.model';
 import { environment } from '../../../environments/environment';
 import { D3ViewService } from './d3-view.service';
-import { LogConsoleComponent } from './log-console/log-console.component'
 import { ZoomableDirective } from '../../d3-studio/directives/zoomable.directive';
 
 declare const $: any;
@@ -35,12 +34,14 @@ export class MicroDetailComponent implements AfterViewInit {
   registries: Service[];
   configurations: Service[];
   iframeSrc: SafeResourceUrl;
+  iframeMonitoringSrc: SafeResourceUrl;
   gatewayapp: string;
   nodes: Node[];
   links: Link[];
   filter: string = "0";
   frontend: string;
   swaggers: Array<Swagger> = [];
+  isStartMonitoring: boolean = false;
 
   @Input('droppedNodes') droppedNodes: any = [];
   //@ViewChildren(LogConsoleComponent) ref: QueryList<LogConsoleComponent>;
@@ -53,12 +54,13 @@ export class MicroDetailComponent implements AfterViewInit {
               private loaderService: LoaderService,
               private d3ViewService: D3ViewService) {
     this.iframeSrc = this.sanitizer.bypassSecurityTrustResourceUrl('about:blank');
+    this.iframeMonitoringSrc = this.sanitizer.bypassSecurityTrustResourceUrl('about:blank');
     this.id = this.route.snapshot.params['id'];
   }
 
 
   ngAfterViewInit() {
-    $('#viewer > .ui.accordion').accordion({animateChildren: true});
+    $('#viewer,#monitoring > .ui.accordion').accordion({animateChildren: true});
     $('#details > .ui.accordion').accordion({animateChildren: true, onOpen: function () {
       $('#viewer').prop('class', 'eight wide column');
       $('#details').prop('class', 'eight wide column');
@@ -70,6 +72,8 @@ export class MicroDetailComponent implements AfterViewInit {
     // {
     //   this.ref.first.start(this.apps)
     // });
+
+    this.d3ViewService.extendNode.subscribe(d => this.redoSvg(d))
 
     this.getMicroserviceDetail();
     this.getMicroservice();
@@ -126,6 +130,8 @@ export class MicroDetailComponent implements AfterViewInit {
       data => {
         this.loaderService.forceHide();
         this.d3ViewService.updatePath(data['nodes'], data['links']);
+        this.nodes = data['nodes'];
+        this.links = data['links'];
       }
     );
   }
@@ -151,12 +157,85 @@ export class MicroDetailComponent implements AfterViewInit {
     }
   }
 
-  redoSvg(){
+  // redoSvg(){
+  //   this.getMicroserviceLink();
+  // }
+
+  refresh(id: number | string){
     this.getMicroserviceLink();
+  }
+
+  redoSvg(id: number | string){
+    //this.getMicroserviceLink();
+    this.apiService.get<Service[]>(`${this.apiUrl}/link/${this.id}`).subscribe(
+      data => {
+        this.loaderService.forceHide();
+
+        let frontend_app_guid = "";
+        if (data['nodes'] && data['links']) {
+          for (let i = 0; i < data['nodes'].length; i++) {
+            if (data['nodes'][i]['essential'] == 'front') {
+              frontend_app_guid = data['nodes'][i]['id'];
+
+              break;
+            }
+          }
+
+          if (frontend_app_guid != "") {
+            let uid = this.getUID;
+
+            this.nodes = this.nodes.concat(data['nodes']);
+            this.links = this.links.concat(data['links']);
+
+            let link = new Link();
+            link.source = id.toString();
+            link.target = frontend_app_guid + '-' + uid;
+            link.type = 'API';
+            link.group = 12;
+            this.links.push(link);
+
+            for (let i = 0; i < data['nodes'].length; i++) {
+              data['nodes'][i]['group'] = 12;
+              data['nodes'][i]['active'] = 'extended';
+              data['nodes'][i]['cpu'] = '';
+              data['nodes'][i]['memory'] = '';
+              data['nodes'][i]['disk'] = '';
+
+              data['nodes'][i]['id'] = data['nodes'][i]['id'] + '-' + uid;
+            }
+            for (let i = 0; i < data['links'].length; i++) {
+              data['links'][i]['group'] = 12;
+
+              data['links'][i]['source'] = data['links'][i]['source'] + '-' + uid;
+              data['links'][i]['target'] = data['links'][i]['target'] + '-' + uid;
+            }
+
+          }
+
+          if(this.nodes && this.links) {
+            this.d3ViewService.updatePath(this.nodes, this.links);
+          }
+        }
+      }
+    );
+  }
+
+  stopSvg() {
+    this.d3ViewService.stopSvg();
   }
 
   zoom(direction) {
     this.directive.zoomClick(direction);
+  }
+
+  startMonitoring(refresh) {
+    this.apiService.get<any>(`monitoring/${this.id}?refresh=`+refresh).subscribe(
+      data => {
+        console.log(data)
+        this.isStartMonitoring = true;
+        this.iframeMonitoringSrc = this.sanitizer.bypassSecurityTrustResourceUrl(data.url);
+      }
+    );
   }
 
   popModal(service){
@@ -233,6 +312,11 @@ export class MicroDetailComponent implements AfterViewInit {
         }
       );
     }
+  }
+
+  getUID = function(){
+    function s4() { return ((1 + Math.random()) * 0x10000 | 0).toString(16).substring(1); }
+    return s4() + s4();
   }
 }
 

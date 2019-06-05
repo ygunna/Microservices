@@ -1,4 +1,8 @@
-<h2 class="ui dividing header">마이크로서비스 목록</h2>
+<h2 class="ui dividing header">
+  <div class="ui big breadcrumb">
+    <div class="active section">마이크로서비스 목록</div>
+  </div>
+</h2>
 
 <div class="ui main container">
 
@@ -10,8 +14,8 @@
           <input type="text" placeholder="Name Search..." [(ngModel)]="searchName">
           <i class="search icon"></i>
         </div>
-        <a class="ui right floated primary button" routerLink="/create" routerLinkActive="active">
-          Add
+        <a class="ui right floated primary button submit" routerLink="/create" routerLinkActive="active">
+          추가
         </a>
       </div>
     </div>

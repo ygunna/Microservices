@@ -38,6 +38,14 @@ type UAA struct {
 	Password     string
 	ClientID     string
 	ClientSecret string
+	TraefikApiUrl string
+	TraefikPort  uint16
+	TraefikUser  string
+	TraefikPassword string
+	ExternalURL  string
+	GrafanaUrl   string
+	GrafanaPort  uint16
+	GrafanaAdminPassword string
 }
 
 type CF_TOKEN struct {
@@ -65,7 +73,9 @@ type V2Info struct {
 	AppSSHOauthCLient        string `json:"app_ssh_oauth_client"`
 }
 
-func NewClient(apiEndpoint string, uaaEndpoint string, name string, password string, clientName string, clientSecret string) *UAA {
+func NewClient(apiEndpoint string, uaaEndpoint string, name string, password string, clientName string, clientSecret string,
+	       traefikApiUrl string, traefikPort uint16, traefikUser string, traefikPassword string, externalUrl string,
+	       grafanaUrl string, grafanaPort uint16, grafanaAdminPassword string) *UAA {
 	return &UAA{
 		UaaURL: uaaEndpoint,
 		ApiURL: apiEndpoint,
@@ -73,6 +83,14 @@ func NewClient(apiEndpoint string, uaaEndpoint string, name string, password str
 		Password: password,
 		ClientID: clientName,
 		ClientSecret: clientSecret,
+		TraefikApiUrl: traefikApiUrl,
+		TraefikPort: traefikPort,
+		TraefikUser: traefikUser,
+		TraefikPassword: traefikPassword,
+		ExternalURL: externalUrl,
+		GrafanaUrl: grafanaUrl,
+		GrafanaPort: grafanaPort,
+		GrafanaAdminPassword: grafanaAdminPassword,
 	}
 }
 

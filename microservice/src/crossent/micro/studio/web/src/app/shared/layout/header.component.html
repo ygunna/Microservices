@@ -1,19 +1,31 @@
-<div class="ui fixed inverted menu">
+<div class="ui fixed inverted menu" [hidden]="!authService.isAuthenticated() && buttonHide">
   <div class="ui">
     <p class="header item">
       MsXpert
     </p>
   </div>
   <div class="ui container">
-    <a routerLink="/list" class="item" [routerLinkActive]="['active']">Microservice</a>
-    <a routerLink="/guide" class="item" [routerLinkActive]="['active']">Docs</a>
+    <a routerLink="/list" class="item" [routerLinkActive]="['active']">CATALOG</a>
+    <a routerLink="/apilist" class="item" [routerLinkActive]="['active']">API</a>
+    <a routerLink="/guide" class="item" [routerLinkActive]="['active']">DOCS</a>
   </div>
-  <div [hidden]="buttonHide" class="right menu">
+  <div class="right menu">
     <div class="item">
+      <i class="user icon"></i>
       <p>{{ username }}</p>
     </div>
-    <div class="item">
-      <a (click)="logout()" class="ui inverted button">Logout</a>
+
+    <div class="ui dropdown item semantic-dropdown">
+      <!--<div class="text">-->
+        <i class="sun outline icon"></i>
+      <!--</div>-->
+      <i class="dropdown icon"></i>
+      <div class="menu">
+        <a class="item" routerLink="/apimanage" *ngIf="authService.getAuthRole('MANAGER')">마이크로서비스 API 관리</a>
+        <a class="item" routerLink="/apihealth" *ngIf="authService.getAuthRole('MANAGER')">마이크로서비스 API 모니터링</a>
+        <div class="ui divider"></div>
+        <a class="item" (click)="logout()">logout</a>
+      </div>
     </div>
   </div>
 </div>

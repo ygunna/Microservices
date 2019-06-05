@@ -11,16 +11,28 @@ const (
 	USER_ID = "user_id"
 	SERVICE_REGISTRY_SERVER = "registry-server"
 	SERVICE_CONFIG_SERVER = "config-server"
-	SERVICE_GATEWAY_SERVER = "gateway-server"
 	MSA_REGISTRY_APP = "registryapp"
 	MSA_CONFIG_APP = "configapp"
 	MSA_GATEWAY_APP = "gatewayapp-micro"
+	REGISTRY_NAME = "registry"
+	CONFIG_NAME = "config"
 	SAMPLE_APP_FRONT = "front"
 	SAMPLE_APP_BACK = "back"
 
 	BASIC_USER = "basic-user"
 	BASIC_SECRET = "basic-secret"
 )
+
+type MsAppKind string
+
+const (
+	MsFrontEnd  	MsAppKind = "frontend"
+	MsBackEnd   	MsAppKind = "backend"
+	MsGateway   	MsAppKind = "gateway"
+	MsMonitoring	MsAppKind = "monitoring"
+	MsDashboard	MsAppKind = "dashboard"
+)
+
 var SessionManager scs.Manager
 
 type TokenRequest struct {

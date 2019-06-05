@@ -11,7 +11,6 @@ import { WebsocketService } from './micro-detail/log-console/websocket.service';
 import { MessageService } from './micro-detail/log-console/message.service';
 
 import { CodemirrorModule } from 'ng2-codemirror';
-import { LogConsoleComponent } from './micro-detail/log-console/log-console.component';
 import { MicroGuideComponent } from './micro-guide/micro-guide.component';
 import { MicroApiComponent } from './micro-api/micro-api.component';
 import { AppLogConsoleComponent } from './micro-detail/app-log-console/app-log-console.component';
@@ -20,7 +19,7 @@ import { AppLogConsoleComponent } from './micro-detail/app-log-console/app-log-c
   imports: [
     FormsModule, CommonModule, RouterModule, CodemirrorModule, D3StudioModule
   ],
-  declarations: [MicroListComponent, MicroDetailComponent, SearchFilterPipe, LogConsoleComponent, MicroGuideComponent, MicroApiComponent, AppLogConsoleComponent],
+  declarations: [MicroListComponent, MicroDetailComponent, SearchFilterPipe, MicroGuideComponent, MicroApiComponent, AppLogConsoleComponent],
   schemas: [ CUSTOM_ELEMENTS_SCHEMA ],
   providers: [ D3ViewService, WebsocketService, MessageService ]
 })

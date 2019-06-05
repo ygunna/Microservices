@@ -5,6 +5,7 @@ import "github.com/tedsuo/rata"
 const (
 
 	ListOrg = "ListOrg"
+	ListManageOrg = "ListManageOrg"
 	ListOrgSpace = "ListOrgSpace"
 	ListSpace = "ListSpace"
 	ListApp = "ListApp"
@@ -34,15 +35,32 @@ const (
 
 	ListMicroserviceApi = "ListMicroserviceApi"
 	GetMicroserviceApi = "GetMicroserviceApi"
-	SaveMicroserviceApi = "SaveMicroserviceApi"
+	GetMicroserviceApiSwagger = "GetMicroserviceApiSwagger"
+	SaveMicroserviceApiSwagger = "SaveMicroserviceApiSwagger"
+	GetMicroserviceApiRule = "GetMicroserviceApiRule"
+	CreateMicroserviceApi = "CreateMicroserviceApi"
+	CreateMicroserviceAppApi = "CreateMicroserviceAppApi"
+	DeleteMicroserviceAppApi = "DeleteMicroserviceAppApi"
+	ListMicroserviceAppApi = "ListMicroserviceAppApi"
+	DeleteMicroserviceApi = "DeleteMicroserviceApi"
+	ListMicroserviceFrontend = "ListMicroserviceFrontend"
+	ListMicroserviceApiHealth = "ListMicroserviceApiHealth"
+	GetMicroserviceNameCheck = "GetMicroserviceNameCheck"
+
+	//ListMicroserviceApi = "ListMicroserviceApi"
+	//GetMicroserviceApi = "GetMicroserviceApi"
+	//SaveMicroserviceApi = "SaveMicroserviceApi"
 
 	Login = "Login"
 	Logout = "Logout"
+
+	GetMicroserviceMonitoring = "GetMicroserviceMonitoring"
 
 )
 
 var Routes = rata.Routes([]rata.Route{
 	{Path: "/api/v1/orgs", Method: "GET", Name: ListOrg},
+	{Path: "/api/v1/manageorgs", Method: "GET", Name: ListManageOrg},
 	{Path: "/api/v1/orgs/:orgid/spaces", Method: "GET", Name: ListOrgSpace},
 	{Path: "/api/v1/spaces", Method: "GET", Name: ListSpace},
 	{Path: "/api/v1/apps", Method: "GET", Name: ListApp},
@@ -72,9 +90,24 @@ var Routes = rata.Routes([]rata.Route{
 	{Path: "/api/v1/login", Method: "POST", Name: Login},
 	{Path: "/api/v1/logout", Method: "POST", Name: Logout},
 
-	{Path: "/api/v1/microservices/api/list", Method: "GET", Name: ListMicroserviceApi},
-	{Path: "/api/v1/microservices/:id/api", Method: "GET", Name: GetMicroserviceApi},
-	{Path: "/api/v1/microservices/:id/api", Method: "PUT", Name: SaveMicroserviceApi},
+	{Path: "/api/v1/apigateway", Method: "GET", Name: ListMicroserviceApi},
+	{Path: "/api/v1/apigateway", Method: "POST", Name: CreateMicroserviceApi},
+	{Path: "/api/v1/apigateway/:id", Method: "GET", Name: GetMicroserviceApi},
+	{Path: "/api/v1/apigateway/:id/rule", Method: "GET", Name: GetMicroserviceApiRule},
+	{Path: "/api/v1/apigateway/:id/swagger", Method: "GET", Name: GetMicroserviceApiSwagger},
+	{Path: "/api/v1/apigateway/:id/swagger", Method: "POST", Name: SaveMicroserviceApiSwagger},
+	{Path: "/api/v1/apigateway/:id/api", Method: "GET", Name: ListMicroserviceAppApi},
+	{Path: "/api/v1/apigateway/:id/api", Method: "POST", Name: CreateMicroserviceAppApi},
+	{Path: "/api/v1/apigateway/:id/api", Method: "DELETE", Name: DeleteMicroserviceAppApi},
+	{Path: "/api/v1/apigateway/:id", Method: "DELETE", Name: DeleteMicroserviceApi},
+	{Path: "/api/v1/apigateway/frontend/microservices", Method: "GET", Name: ListMicroserviceFrontend},
+	{Path: "/api/v1/apigateway/health/microservices", Method: "GET", Name: ListMicroserviceApiHealth},
+	{Path: "/api/v1/apigateway/name/check", Method: "GET", Name: GetMicroserviceNameCheck},
+
+	//{Path: "/api/v1/microservices/api/list", Method: "GET", Name: ListMicroserviceApi},
+	//{Path: "/api/v1/microservices/:id/api", Method: "GET", Name: GetMicroserviceApi},
+	//{Path: "/api/v1/microservices/:id/api", Method: "PUT", Name: SaveMicroserviceApi},
 	{Path: "/api/v1/microservices/:id", Method: "DELETE", Name: DeleteMicroservice},
 
+	{Path: "/api/v1/monitoring/:id", Method: "GET", Name: GetMicroserviceMonitoring},
 })

@@ -11,7 +11,7 @@ export class Microservice {
     public name?: string,
     public version?: string,
     public description?: string,
-    public visible?: boolean,
+    public visible?: string,
     public status?: string,
     public services?: {resources: Service[]},
     public apps?: {resources: Application[]}

@@ -1,0 +1,49 @@
+#!/bin/bash
+# vim: set ft=sh
+
+set -e
+
+
+
+RUN_DIR=/var/vcap/sys/run/traefik
+LOG_DIR=/var/vcap/sys/log/traefik
+PIDFILE=$RUN_DIR/traefik.pid
+CONFIG=/var/vcap/jobs/traefik/conf/traefik.toml
+
+
+source /var/vcap/packages/pid_utils/pid_utils.sh
+
+
+case $1 in
+
+  start)
+    pid_guard $PIDFILE "traefik"
+
+    mkdir -p $RUN_DIR
+    chown -R vcap:vcap $RUN_DIR
+
+    mkdir -p $LOG_DIR
+    chown -R vcap:vcap $LOG_DIR
+
+    echo $$ > /var/vcap/sys/run/traefik/traefik.pid
+
+    setcap cap_net_bind_service=+ep /var/vcap/packages/traefik/bin/traefik
+
+    exec chpst -u vcap:vcap /var/vcap/packages/traefik/bin/traefik \
+      -c "${CONFIG}" \
+      1>>${LOG_DIR}/traefik.stdout.log \
+      2>>${LOG_DIR}/traefik.stderr.log
+
+    ;;
+
+  stop)
+    kill_and_wait $PIDFILE
+
+    ;;
+
+  *)
+    echo "Usage: $0 {start|stop}"
+
+    ;;
+
+esac

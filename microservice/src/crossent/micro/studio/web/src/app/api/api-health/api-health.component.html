@@ -1,0 +1,102 @@
+<h2 class="ui dividing header">
+  <div class="ui big breadcrumb">
+    <a routerLink="/apilist" class="section">마이크로서비스 API 목록</a>
+    <i class="right chevron icon divider"></i>
+    <div class="active section">마이크로서비스 API 모니터링</div>
+  </div>
+</h2>
+
+<!--container-->
+<div class="ui main container">
+
+  <!--contents-->
+  <div class="column contents-area mb40">
+    <!--<div class="mb25">-->
+      <!--<div class="ui transparent icon input serchType-01">-->
+        <!--<input type="text" readonly>-->
+      <!--</div>-->
+    <!--</div>-->
+
+    <!--<div class="mb25">-->
+      <div class="ui horizontal segments">
+        <div class="ui segment">
+          <h4 class="ui header">Average Response Time</h4>
+          <h2 class="ui blue header">{{ averageResponseTime }}</h2>
+        </div>
+        <div class="ui segment">
+          <h4 class="ui header">Total Code Count</h4>
+          <h2 class="ui blue header">{{ totalCodeCount }}</h2>
+        </div>
+        <div class="ui segment">
+          <h4 class="ui header">Uptime Since {{ uptimeSince }}</h4>
+          <h2 class="ui blue header">{{ uptime }}</h2>
+        </div>
+      </div>
+      <!--<div class="ui horizontal segments">-->
+        <!--<div class="ui segment">-->
+          <!--<h4 class="ui header">Average Response Time</h4>-->
+          <!--<p>4</p>-->
+        <!--</div>-->
+        <!--<div class="ui segment">-->
+          <!--<h4 class="ui header">Code Count</h4>-->
+          <!--<p>5</p>-->
+        <!--</div>-->
+        <!--<div class="ui segment">-->
+          <!--<h4 class="ui header">PID</h4>-->
+          <!--<p>6</p>-->
+        <!--</div>-->
+      <!--</div>-->
+    <!--</div>-->
+
+    <!--layout-->
+    <div class="content">
+      <div class="ui two column grid">
+        <div class="column">
+          <div class="ui segment">
+            <h5 class="ui header">Average Response Time (µs)</h5>
+            <app-line-chart [value]="chartValue"></app-line-chart>
+          </div>
+        </div>
+        <div class="column">
+          <div class="ui segment">
+            <h5 class="ui header">Total Status Code Count</h5>
+            <app-bar-chart [value]="statusCodeValue"></app-bar-chart>
+          </div>
+        </div>
+      </div>
+
+      <div class="ui attached message"  *ngIf="recentErrors">
+        <div class="header">
+          Recent HTTP Errors
+        </div>
+      </div>
+      <div class="recent_http">
+        <table class="ui attached single line table"  *ngIf="recentErrors">
+          <thead>
+          <tr>
+            <th>Status</th>
+            <th>Request</th>
+            <th>Time</th>
+          </tr>
+          </thead>
+          <tbody>
+          <tr *ngFor="let entry of recentErrors; trackBy: trackRecentErrors;">
+            <td><div class="ui red horizontal label">{{ entry.status_code }}</div> &nbsp; {{ entry.status }}</td>
+            <td><div class="ui horizontal label">{{ entry.method }}</div> &nbsp; {{ entry.host }}{{ entry.path }}</td>
+            <td>{{ entry.time | date:'yyyy-MM-dd HH:mm:ss a z' }}</td>
+          </tr>
+          <tr *ngIf="!recentErrors?.length">
+            <td colspan="3">
+              <p>No entries</p>
+            </td>
+          </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!--//layout-->
+
+    <!--//contents-->
+  </div>
+  <!--//container-->

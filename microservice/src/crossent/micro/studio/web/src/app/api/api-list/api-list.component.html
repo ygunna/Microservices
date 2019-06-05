@@ -1,0 +1,111 @@
+  <h2 class="ui dividing header">
+    <div class="ui big breadcrumb">
+      <div class="active section">마이크로서비스 API 목록</div>
+    </div>
+  </h2>
+
+  <div class="ui main container">
+
+    <div class="box-wrap">
+
+      <div class="ui stackable grid">
+        <div class="column">
+          <div class="ui form dropdown">
+            <div class="inline field">
+              <label>분류</label>
+              <select class="ui search dropdown" [(ngModel)]="part">
+                <option *ngFor="let part of parts" [ngValue]="part.value">{{part.name}}</option>
+              </select>
+            </div>
+          </div>
+          <div class="ui icon input">
+            <input placeholder="Name을 입력하세요." type="text" [(ngModel)]="searchName">
+            <i class="search icon"></i>
+          </div>
+          <div class="ui icon input">
+            <input placeholder="Path를 입력하세요." type="text" [(ngModel)]="searchPath">
+            <i class="search icon"></i>
+          </div>
+        </div>
+      </div>
+
+      <div class="ui divider"></div>
+
+      <div class="ui link three stackable cards">
+        <div class="card black" *ngFor="let microapi of (microapis | searchApiFilter:searchName:part:searchPath) ; index as i">
+          <div class="content box-title">
+            <div class="right floated ui mini gray label"> {{microapi.part | codeFilter}} </div>
+            <a class="header" [routerLink]="['/apiview', microapi.id]" routerLinkActive="active">{{microapi.name}}</a>
+          </div>
+          <div class="ui  image">
+            <div class="apiavatar" [x]="200" [image]="microapi.image"></div>
+          </div>
+          <div class="content box-info">
+
+            <div class="meta">
+              <!--<p class="building">  </p>-->
+              <p class="color-blue home">{{microapi.host}} {{microapi.path}}</p>
+            </div>
+            <div class="description">
+              <p class="question">{{microapi.description}}</p>
+            </div>
+          </div>
+          <div class="extra content box-bottom">
+                <span class="right floated">
+                  {{microapi.updated | date:'yyyy-MM-dd'}}
+                </span>
+            <span>
+                   <i class="like icon"></i>
+                    {{microapi.favorite}}  Like
+                </span>
+          </div>
+        </div>
+      </div>
+
+      <div class="ui divider"></div>
+
+      <div class="ui stackable grid" *ngIf = "swaggerApiName == ''">
+        <div class="column">
+          <button class="fluid ui button" (click)="more()" [class.disabled]="isEnd" [class.basic]="isEnd">
+            <i class="icon angle down"></i>
+            more
+          </button>
+        </div>
+
+      </div>
+
+
+
+    </div>
+  </div>
+
+  <div class="ui tiny modal addapi">
+    <!--<div class="ui attached message">-->
+    <div class="header">
+      Auth
+    </div>
+    <!--</div>-->
+    <!--<div class="ui attached segment">-->
+    <div class="content">
+      <div class="ui form">
+        <form #defaultForm="ngForm">
+          <h5 class="ui dividing header" style="font-weight: normal">Basic Auth</h5>
+          <div class="two fields">
+            <div class="field">
+              username <input placeholder="username" type="text" name="username" [(ngModel)]="selectedMicroapi.username" required>
+            </div>
+            <div class="field">
+              password <input placeholder="password" type="password" name="userpassword" [(ngModel)]="selectedMicroapi.userpassword" required>
+            </div>
+          </div>
+        </form>
+
+
+      </div>
+    </div>
+    <div class="actions mt40">
+      <button class="ui button cancel gray">취소</button>
+      <button class="ui primary ok button" (click)="addApi()" [disabled]="!defaultForm.form.valid">추가</button>
+    </div>
+    <!--</div>-->
+  </div>

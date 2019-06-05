@@ -1,4 +1,10 @@
-<h2 class="ui dividing header">마이크로서비스 상세</h2>
+<h2 class="ui dividing header">
+  <div class="ui big breadcrumb">
+    <a class="section" routerLink="/list">마이크로서비스 목록</a>
+    <div class="divider"> / </div>
+    <div class="active section">마이크로서비스 상세</div>
+  </div>
+</h2>
 
 <div class="ui main container fluid">
 
@@ -122,12 +128,9 @@
           <div class="ui icon" data-tooltip="수정" data-inverted="">
             <a routerLink="/edit/{{id}}" routerLinkActive="active"><i class="bordered tiny green write link icon"></i></a>
           </div>
-          <div class="ui icon" data-tooltip="삭제" data-inverted=""  (click)="delete()">
-            <i class="bordered tiny red trash link icon"></i>
-          </div>
-          <div class="ui icon" data-tooltip="새로고침" data-inverted="">
-            <i class="bordered tiny black notched circle link icon" (click)="redoSvg()"></i>
-          </div>
+          <!--<div class="ui icon" data-tooltip="새로고침" data-inverted="">-->
+            <!--<i class="bordered tiny black notched circle link icon" (click)="refresh(id)"></i>-->
+          <!--</div>-->
           <!--
           <form class="ui icon small form" #filterForm="ngForm">
             <div class="field">
@@ -146,7 +149,7 @@
         </h4>
         <div class="ui bottom attached segment">
           <div id="chart" class="row" style="width:100%; height:600px; margin-left: 6px; overflow: auto">
-            <svg #svg id="dropzone" width="100%" height="100%" appDroppable [droppedNodes]="nodes">
+            <svg #svg id="dropzone" width="100%" height="100%" appDroppable [droppedNodes]="nodes" (click)="stopSvg()">
               <filter id="dropShadow" width="120%" height="140%">
                 <feGaussianBlur in="SourceAlpha" stdDeviation="2" />
                 <feOffset dx="2" dy="4" />
@@ -171,7 +174,6 @@
             <table class="ui grey celled table">
               <thead>
               <tr>
-                <th>Entrypoint</th>
                 <th>Name</th>
                 <th>Url</th>
                 <th>Instances</th>
@@ -180,7 +182,6 @@
               </thead>
               <tbody>
               <tr *ngFor="let app of (apps)">
-                <td><input type="radio" name="frontend" [value]="app.url" [(ngModel)]="frontend"></td>
                 <td>{{app.appName}}</td>
                 <td>{{app.url}}</td>
                 <td>{{app.app}}</td>
@@ -362,6 +363,49 @@
 
       </div>
 
+      <!-- div class="fourteen wide column" id="monitoring">
+        <div class="ui styled fluid accordion">
+          <div class="title">
+            <i class="dropdown icon"></i>
+            Monitoring
+          </div>
+          <div class="content">
+            <button class="large ui button" (click)="startMonitoring('')" [class.inactive]="isStartMonitoring">
+              Start
+            </button>
+            <button class="large ui button" (click)="startMonitoring('refresh')" [class.inactive]="!isStartMonitoring">
+              Refresh
+            </button>
+            <p></p>
+            <div style="position: relative; top: -5px; left: -5px;">
+              <iframe [src]="iframeMonitoringSrc" height="550" width="100%" frameborder="0"></iframe>
+            </div>
+          </div>
+        </div>
+      </div -->
+    </div>
+  </div>
+
+  <div class="ui stackable grid"  style="padding-bottom: 20px;">
+    <div class="sixteen wide column" id="monitoring">
+      <div class="ui styled fluid accordion">
+        <div class="title">
+          <i class="dropdown icon"></i>
+          Monitoring
+        </div>
+        <div class="content">
+          <button class="large ui button" (click)="startMonitoring('')" [class.inactive]="isStartMonitoring">
+            Start
+          </button>
+          <button class="large ui button" (click)="startMonitoring('refresh')" [class.inactive]="!isStartMonitoring">
+            Refresh
+          </button>
+          <p></p>
+          <div style="position: relative; top: -5px; left: -5px;">
+            <iframe [src]="iframeMonitoringSrc" height="550" width="100%" frameborder="0"></iframe>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 

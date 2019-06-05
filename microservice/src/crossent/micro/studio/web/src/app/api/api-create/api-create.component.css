@@ -1,0 +1,11 @@
+input:-moz-read-only { /* For Firefox */
+  background-color: #f8f8f9;
+}
+
+input:read-only {
+  background-color: #f8f8f9;
+}
+
+input[readonly], input[readonly="readonly"], textarea[readonly] {
+  background-color: #f8f8f9 !important;
+}

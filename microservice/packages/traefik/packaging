@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+
+set -ex
+
+mkdir "${BOSH_INSTALL_TARGET}/bin"
+
+gzip -dc traefik/traefik-*_linux-amd64.gz \
+	> "${BOSH_INSTALL_TARGET}/bin/traefik"
+
+chmod +x "${BOSH_INSTALL_TARGET}/bin/traefik"

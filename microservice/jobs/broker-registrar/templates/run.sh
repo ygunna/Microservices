@@ -27,7 +27,7 @@ CF_SKIP_SSL_VALIDATION=<%= p("cf.skip_ssl_validation") %>
   broker_password = p("servicebroker.password", nil)
   unless broker_url
     broker = link("servicebroker")
-    external_host = broker.p("external_host", "#{broker.instances.first.address}:#{broker.p("port")}")
+    external_host = broker.p("external_host", "#{broker.instances.first.address}:#{broker.p("broker.port")}")
     protocol      = broker.p("protocol", broker.p("ssl_enabled", false) ? "https" : "http")
     broker_url  ||= "#{protocol}://#{external_host}"
     broker_name ||= broker.p("name")
@@ -80,3 +80,12 @@ cf service-access
 
 curl -X PUT -H "X-Broker-Api-Version: 2.10" -u ${BROKER_USERNAME}:${BROKER_PASSWORD} ${BROKER_URL}/v2/service_instances/-micro -d '{"service_id": "64aca71f-f2e9-4f3d-8e0e-9a3e1e5e3bb8", "plan_id": "334744a3-f12f-4004-a94e-d7132a0d0708", "organization_guid": "", "space_guid": ""}'
 #curl -X PUT -H "X-Broker-Api-Version: 2.10" -u ${BROKER_USERNAME}:${BROKER_PASSWORD} ${BROKER_URL}/preapp/v1/create_service_app -d '{"service_id": ["64aca71f-f2e9-4f3d-8e0e-9a3e1e5e3bb6", "64aca71f-f2e9-4f3d-8e0e-9a3e1e5e3bb7", "64aca71f-f2e9-4f3d-8e0e-9a3e1e5e3bb8"]}'
+
+# prometheus
+cd /var/vcap/packages/prometheus-binary
+cf api ${CF_API_URL} --skip-ssl-validation
+cf auth \
+  ${CF_ADMIN_USERNAME} \
+  ${CF_ADMIN_PASSWORD}
+cf target -o org-micro -s space-micro
+cf push prometheus-micro -b binary_buildpack -c './prometheus_start.sh' -m 128m --no-start

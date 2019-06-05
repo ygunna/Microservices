@@ -22,7 +22,7 @@
         "assets/semantic/semantic.css",
         "../node_modules/jstree/dist/themes/default/style.css",
         "../node_modules/codemirror/lib/codemirror.css",
-        "../node_modules/codemirror/theme/lesser-dark.css",
+        "../node_modules/codemirror/theme/darcula.css",
         "styles.css"
       ],
       "scripts": [

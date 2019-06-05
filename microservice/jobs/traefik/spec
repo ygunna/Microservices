@@ -1,0 +1,135 @@
+---
+name: traefik
+
+templates:
+  bin/traefik_ctl.erb: bin/traefik_ctl
+  conf/traefik.toml.erb: conf/traefik.toml
+  conf/rules.toml.erb: conf/rules.toml
+  tls/traefik-default.crt: tls/traefik-default.crt
+  tls/traefik-default.key: tls/traefik-default.key
+  tls/web-backend.crt: tls/web-backend.crt
+  tls/web-backend.key: tls/web-backend.key
+
+packages:
+  - pid_utils
+  - traefik
+
+provides:
+    - name: traefik
+      type: http-router
+      properties:
+        - traefik.http.port
+        - traefik.web.port
+        - traefik.web.basic_auth.username
+        - traefik.web.basic_auth.password
+        - traefik.web.tls.cert
+
+properties:
+  traefik.debug:
+    description: |
+      Whether to enable debug mode.
+    default: false
+
+  traefik.log_level:
+    description: |
+      The level of details in Traefik logs.
+      Possible values are:
+      - DEBUG (the most verbose level)
+      - INFO
+      - WARN
+      - ERROR
+      - FATAL
+      - PANIC (the least verbose level)
+    default: INFO
+
+  traefik.access_logs.enabled:
+    description: |
+      Whether to activate the access logs. This will produce one line for each
+      access to the traefik server. This might generate high volume of data
+      under high loads.
+    default: true
+
+  traefik.accept_invalid_backend_certificates:
+    description: |
+      Whether invalid SSL certificates are accepted for backends.
+      This disables detection of man-in-the-middle attacks so should be used
+      on trusted backend networks only.
+    default: false
+
+  traefik.http.enabled:
+    description: |
+      Whether to activate the HTTP entrypoint.
+    default: false
+
+  traefik.http.port:
+    description: |
+      TCP port for the HTTP entrypoint.
+    default: 80
+
+  traefik.tls.enabled:
+    description: |
+      Whether to activate the HTTPS entrypoint.
+    default: true
+
+  traefik.tls.port:
+    description: |
+      TCP port for the HTTPS entrypoint.
+    default: 443
+
+  traefik.tls.cert:
+    type: certificate
+    description: |
+      The default TLS certificate to present on HTTPS entrypoint.
+
+  traefik.web.enabled:
+    description: |
+      Whether the 'web' backend should be enabled.
+      This will enable a REST API endpoint and a web UI that can be used to
+      dynamically read or modify the Traefik configuration. Please take great
+      care not exposing this endpoint to the entire Internet, otherwise your
+      server could get compromized by malicious users.
+    default: false
+
+  traefik.web.basic_auth.username:
+    description: |
+      Basic Auth username to access the 'web' backend.
+
+  traefik.web.basic_auth.password:
+    description: |
+      Basic Auth password to access the 'web' backend.
+
+  traefik.web.readonly:
+    description: |
+      Whether the 'web' endpoint should be readonly, in which case the Traefik
+      configuration can only be read and not modified through this backend.
+    default: false
+
+  traefik.web.port:
+    description: |
+      TCP port for the 'web' backend.
+      We advise to set '8443' here when 'traefik.web.tls.enabled' is set to 'true'.
+    default: 8080
+
+  traefik.web.tls.enabled:
+    description: |
+      Whether to activate TLS for the 'web' backend.
+    default: false
+
+  traefik.web.tls.cert:
+    type: certificate
+    description: |
+      The TLS certificate to use for the 'web' backend.
+
+  traefik.file.enabled:
+    description: |
+      Whether the 'file' backend should be enabled.
+    default: false
+
+  traefik.file.rules:
+    description: |
+      A verbatim of rules to use for the 'file' backend.
+
+  traefik.file.watch:
+    description: |
+      Whether Traefik should watch the rules file for any dynamic change.
+    default: false

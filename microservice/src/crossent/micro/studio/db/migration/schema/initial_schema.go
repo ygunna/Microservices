@@ -13,7 +13,12 @@ func InitialSchema(tx migration.LimitedTx) error {
 			description text,
 			visible varchar(255) NOT NULL DEFAULT 'private',
 			status varchar(255),
-			UNIQUE (name)
+			url varchar(255),
+			swagger text,
+			user_id varchar(255) NOT NULL,
+			active varchar(1) DEFAULT 'Y' NOT NULL,
+			UNIQUE (name, space_guid),
+			UNIQUE (name, space_guid, version)
 		)
 	`)
 	if err != nil {
@@ -25,7 +30,8 @@ func InitialSchema(tx migration.LimitedTx) error {
 		        id serial PRIMARY KEY,
 		        micro_id integer REFERENCES micro_app (id),
 		        app_guid varchar(255) NOT NULL,
-		        source_guid varchar(255) NOT NULL
+		        source_guid varchar(255) NOT NULL,
+		        essential varchar(10)
 		)
 	`)
 	if err != nil {

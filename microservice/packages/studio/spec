@@ -68,4 +68,6 @@ files:
   - vendor/golang.org/x/crypto/acme/autocert/*.go
   - vendor/golang.org/x/crypto/acme/*.go
   - vendor/code.cloudfoundry.org/bytefmt/*.go
+  - vendor/github.com/containous/traefik/types/*.go
+  - vendor/github.com/gorilla/mux/*.go
 

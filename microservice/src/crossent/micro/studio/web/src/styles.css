@@ -14,10 +14,10 @@ body, h2.ui.header, .ui.menu, .ui.button, .ui.accordion .title:not(.ui) {
   font-family: 'Noto Sans KR','Malgun Gothic','맑은 고딕','돋움',dotum,'tahoma',sans-serif !important;
 }
 select::-ms-expand {background-color: #fff;border:0;}
-.ui.form input[type=text] {padding: 5px 12px 6px;}
-select.ui.dropdown {height: 30px;padding: 0 .5em;}
+/*.ui.form input[type=text] {padding: 5px 12px 6px;}*/
+/*select.ui.dropdown {height: 30px;padding: 0 .5em;}*/
 .ui.form .field>label {color: #4878c0;font-weight: 500;}
-.ui.input input {padding: 5px 12px 6px;max-width: inherit;width: 100%;}
+.ui.input.pack input {padding: 5px 12px 6px;max-width: inherit;width: 100%;}
 .ui.tab.active .ui.input {widows: 112px;}
 .ui.checkbox input:checked~.box:after, .ui.checkbox input:checked~label:after {color:#4878c0;}
 .ui.checkbox input:checked:focus~.box:after, .ui.checkbox input:checked:focus~label:after,
@@ -26,9 +26,9 @@ select.ui.dropdown {height: 30px;padding: 0 .5em;}
 .ui.radio.checkbox input:focus:checked~.box:after, .ui.radio.checkbox input:focus:checked~label:after {background-color:#4878c0;}
 
 /* header menu */
-.ui.inverted.menu {background-color: #454545;}
-.ui.inverted.menu .header.item {margin-left: 15px;width: 88px;}
-.ui.inverted.menu .header.item, .ui.inverted.menu a.header:hover {background: url(assets/imgs/logo.png) 0 50% no-repeat;color: transparent;}
+.ui.inverted.menu {background-color: #575b6b;}
+.ui.inverted.menu .header.item {margin-left: 15px;width: 134px;}
+.ui.inverted.menu .header.item, .ui.inverted.menu a.header:hover {background: url(assets/imgs/logo.png) 0 50% no-repeat;color: transparent; padding-top: 20px;}
 .ui.inverted.menu a.item:hover {background-color: transparent;}
 
 /* h2 */
@@ -98,17 +98,18 @@ i.bordered.link.icon:before {position: absolute;margin-left: -5px;font-size: 13p
 .ui.secondary.pointing.menu .active.item:hover {color: #2f65b7;border-color: #4878c0;}
 
 /* Table */
-.ui.table {border: 0;border-bottom: 1px solid #ddd;color: #666;font-size: inherit;}
-.ui.table thead th {border-top: 1px solid #4878c0;color: #4878c0;background: #eff7ff;font-weight: 500;border-bottom: 1px solid #ddd;}
-.ui.celled.table tr td, .ui.celled.table tr th {border-left: 0;}
-.ui.selectable.table tbody tr:hover, .ui.table tbody tr td.selectable:hover {background: #fafafa !important;}
-.ui.table tr td {border-top: 1px solid #ddd;}
-.ui.grey.table {border-top:0;}
+/*.ui.table {border: 0;border-bottom: 1px solid #ddd;color: #666;font-size: inherit;}*/
+/*.ui.table thead th {border-top: 1px solid #4878c0;color: #4878c0;background: #eff7ff;font-weight: 500;border-bottom: 1px solid #ddd;}*/
+/*.ui.celled.table tr td, .ui.celled.table tr th {border-left: 0;}*/
+/*.ui.selectable.table tbody tr:hover, .ui.table tbody tr td.selectable:hover {background: #fafafa !important;}*/
+/*.ui.table tr td {border-top: 1px solid #ddd;}*/
+/*.ui.grey.table {border-top:0;}*/
 
 /* button */
-.ui.button, .ui.buttons .button, .ui.buttons .or {font-size: inherit;}
-.ui.button {padding: 8px 15px;min-width: 90px;background-color: #868f96;color: #fff;font-weight: 300;}
-.ui.button:hover {background-color: #a2a9af;color: #fff;}
+/*.ui.button, .ui.buttons .button, .ui.buttons .or {font-size: inherit;}*/
+/*.ui.button {padding: 8px 15px;min-width: 90px;background-color: #868f96;color: #fff;font-weight: 300;}*/
+/*.ui.button:hover {background-color: #a2a9af;color: #fff;}*/
+.ui.submit.button {padding: 8px 15px;min-width: 90px; font-weight:400;}
 .ui.primary.button, .ui.primary.buttons .button {background-color: #4878c0;} /* btn : Blue */
 .ui.primary.button:hover, .ui.primary.buttons .button:hover {background-color: #2f65b7;}
 .ui.positive.button, .ui.positive.buttons .button {background-color: #4878c0;} /* btn : Green */
@@ -152,3 +153,44 @@ g.node:hover circle {
   fill: orange;
 }
 
+/* api health */
+.bar-chart .axis text {
+  fill: #7f8fa4;
+  font: 10px sans-serif
+}
+
+.bar-chart .axis line,.bar-chart .axis path {
+  fill: none;
+  opacity: .2;
+  stroke: #7f8fa4
+}
+
+.bar-chart .axis--x text {
+  font: 12px sans-serif
+}
+
+.bar-chart .axis--x path {
+  display: none
+}
+
+.line-chart .line {
+  fill: none;
+  stroke: #0294ff;
+  stroke-width: 3px;
+  shape-rendering: geometricPrecision
+}
+
+.line-chart .axis line,.line-chart .axis path {
+  stroke: #7f8fa4;
+  opacity: .2;
+  shape-rendering: crispEdges;
+  fill: none
+}
+
+.line-chart .axis path {
+  display: none
+}
+
+.line-chart .axis text {
+  fill: #7f8fa4
+}

@@ -13,12 +13,14 @@ import (
 	"bytes"
 	"io/ioutil"
 	"io"
+	"time"
+	"code.cloudfoundry.org/lager"
 )
 
 type T interface{}
 
 func (s *Server) CreateMicroservice(w http.ResponseWriter, r *http.Request) {
-	logger := s.logger.Session("micro")
+	logger := s.logger.Session("compose")
 	logger.Debug("CreateMicroservice")
 
 	var request domain.ComposeRequest
@@ -28,10 +30,24 @@ func (s *Server) CreateMicroservice(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
+
+
+	if count, err := s.repositoryFactory.Compose().ListMicroserviceByName(request.Name); err == nil {
+		if count > 0 {
+			w.Header().Set("Content-Type", "application/json")
+			http.Error(w, "duplicateName", http.StatusInternalServerError)
+			return
+		}
+	}
+
+
+	session := domain.SessionManager.Load(r)
+	userid, _ := session.GetString(domain.USER_ID)
+
 	request.Status = domain.STATUS_INITIAL
+	request.UserId = userid
 
 	// 1. create Microservice
-	fmt.Println("[compose_server] CreateMicroservice request.Name: ", request.Name)
 	id, err := s.repositoryFactory.Compose().CreateMicroservice(request)
 	if err != nil {
 		logger.Error("CreateMicroservice err >>>", err)
@@ -67,11 +83,10 @@ func (s *Server) CreateMicroservice(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		name := fmt.Sprintf("%sapp%s", strings.Split(service.Entity.Name, "-")[0], serviceInstance.Metadata.GUID)
-		_, err = s.saveAssistanceApp(id, name)
-		if err != nil {
-			logger.Error("saveAssistanceApp err >>>", err)
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
+		if service.Entity.Name == domain.SERVICE_CONFIG_SERVER {
+			s.saveEssentialApp(id, name)
+		} else {
+			go s.saveEssentialApp(id, name)
 		}
 	}
 	// 2-2. Apps
@@ -96,7 +111,6 @@ func (s *Server) CreateMicroservice(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
-	fmt.Println("[compose_server] id >>>>>>>>>>>>>>>>>>>>>>>>>>>", id)
 
 	// 3. get microservice
 	micro, err := s.repositoryFactory.View().GetMicroservice(id)
@@ -112,40 +126,41 @@ func (s *Server) CreateMicroservice(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	fmt.Println("[compose_server] micro >>>>>>>>>>>>>>>>>>>>>>>>>>>", micro)
 
 	w.WriteHeader(http.StatusCreated)
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(js)
 }
-func (s *Server) saveAssistanceApp(microID int, name string) (bool, error) {
-	logger := s.logger.Session("micro")
-	logger.Debug("saveAssistanceApp")
-	fmt.Println("saveAssistanceApp name >>>>>>>>>>>>>>>>>>>>>>>>>>>", name)
+func (s *Server) saveEssentialApp(microID int, name string) {
+	logger := s.logger.Session("compose")
+	logger.Debug("saveEssentialApp")
 
-	var result bool
-	app, err := s.GetAppByName(name)
-	if err != nil {
-		logger.Error("[saveAssistanceApp] GetAppByName err >>>", err)
-		return result, err
-	}
-	fmt.Println("saveAssistanceApp len(app.Resources) >>>>>>>>>>>>>>>>>>>>>>>>>>>", len(app.Resources))
-
-	if len(app.Resources) > 0 {
-		guid := app.Resources[0].Meta.Guid
-		appRequest := domain.MicroserviceApp{MicroID: microID, AppGuid: guid, SourceGuid: guid}
-		result, err = s.repositoryFactory.Compose().CreateMicroserviceApp(appRequest)
-		if err != nil {
-			logger.Error("[saveAssistanceApp] CreateMicroserviceApp err >>>", err)
-			return result, err
+	var app domain.Apps
+	for i := 1; i < 5; i++ {
+		time.Sleep(time.Millisecond * time.Duration(500 * i))
+		app, _ = s.GetAppByName(name)
+		if app.Count > 0 {
+			break
 		}
 	}
-	fmt.Println("saveAssistanceApp result >>>>>>>>>>>>>>>>>>>>>>>>>>>", result)
-	return result, nil
+	if app.Count > 0 {
+		var essential string
+		if strings.HasPrefix(app.Resources[0].Entity.Name, domain.MSA_REGISTRY_APP) {
+			essential = domain.REGISTRY_NAME
+		} else if strings.HasPrefix(app.Resources[0].Entity.Name, domain.MSA_CONFIG_APP) {
+			essential = domain.CONFIG_NAME
+		}
+		guid := app.Resources[0].Meta.Guid
+		appRequest := domain.MicroserviceApp{MicroID: microID, AppGuid: guid, SourceGuid: guid, Essential: essential}
+		_, err := s.repositoryFactory.Compose().CreateMicroserviceApp(appRequest)
+		if err != nil {
+			logger.Error("[saveEssentialApp] CreateMicroserviceApp err >>>", err)
+		}
+	}
 }
 
 func (s *Server) GetMicroserviceComposition(w http.ResponseWriter, r *http.Request) {
-	logger := s.logger.Session("micro")
+	logger := s.logger.Session("compose")
 	logger.Debug("GetMicroserviceComposition")
 
 	token, err := s.uaa.GetAuthToken()
@@ -167,12 +182,14 @@ func (s *Server) GetMicroserviceComposition(w http.ResponseWriter, r *http.Reque
 	}
 
 	// microservice 상세정보
-	apps := []domain.Compose{}
+	apps := []domain.AppResource{}
 	services := []domain.ServiceInstanceResource{}
 	bindings := []domain.ServiceBinding{}
 	routes := []route{}
 	var routingData []byte
 	networkPolicyApps := []string{}
+	properties := []property{}
+	var configUrl string
 
 	// apps
 	msApps, err := s.repositoryFactory.Compose().ListMicroserviceAppApp(msa.ID)
@@ -183,23 +200,23 @@ func (s *Server) GetMicroserviceComposition(w http.ResponseWriter, r *http.Reque
 		return
 	}
 	for _, msApp := range msApps {
-		app := domain.Compose{}
+		app := domain.AppResource{}
 		// App 정보
 		if msa.Status == domain.STATUS_INITIAL || msApp.AppGuid == "" {
-			app.ID = msApp.SourceGuid
+			app.Meta.Guid = msApp.SourceGuid
 		} else {
-			app.ID = msApp.AppGuid
+			app.Meta.Guid = msApp.AppGuid
 			networkPolicyApps = append(networkPolicyApps, msApp.AppGuid)
 		}
-		summary := s.GetAppSummary(app.ID, token)
+		summary := s.GetAppSummary(app.Meta.Guid, token)
 
 		// routing 정보
 		if strings.HasPrefix(summary.Name, domain.MSA_CONFIG_APP) {
 			route := summary.Routes[0]
 			// configapp basic auth
 			basicAuth := fmt.Sprintf("%s:%s", summary.Environment["basic-user"], summary.Environment["basic-secret"])
-			configUrl := fmt.Sprintf("%s.%s", route.Host, route.Domain.Name)
-			resp, err := http.Get(fmt.Sprintf("http://%s@%s/config/read/apigateway?refresh=true", basicAuth, configUrl))
+			configUrl = fmt.Sprintf("http://%s@%s.%s", basicAuth, route.Host, route.Domain.Name)
+			resp, err := http.Get(fmt.Sprintf("%s/config/read/apigateway?refresh=true", configUrl))
 			if err != nil {
 				logger.Error("failed http get apigateway", err)
 				w.WriteHeader(http.StatusInternalServerError)
@@ -223,11 +240,14 @@ func (s *Server) GetMicroserviceComposition(w http.ResponseWriter, r *http.Reque
 			continue
 		}
 		if msa.Status == domain.STATUS_INITIAL || msApp.AppGuid == "" {
-			app.ID = domain.STATUS_INITIAL + "_" + summary.Name
-			app.Name = fmt.Sprintf("%s-%s", summary.Name, msa.Name)
+			app.Meta.Guid = domain.STATUS_INITIAL + "_" + summary.Name
+			app.Entity.Name = fmt.Sprintf("%s-%s", summary.Name, msa.Name)
 		} else {
-			app.ID = summary.Guid
-			app.Name = summary.Name
+			app.Meta.Guid = summary.Guid
+			app.Entity.Name = summary.Name
+			app.Entity.Instances = summary.Instances
+			app.Entity.Memory = summary.Memory
+			app.Entity.DiskQuota = summary.DiskQuota
 		}
 		apps = append(apps, app)
 
@@ -235,7 +255,7 @@ func (s *Server) GetMicroserviceComposition(w http.ResponseWriter, r *http.Reque
 		if msa.Status != domain.STATUS_INITIAL && msApp.AppGuid != "" {
 			for _, service := range summary.Services {
 				var binding domain.ServiceBinding
-				binding.AppGuid = app.ID
+				binding.AppGuid = app.Meta.Guid
 				binding.ServiceInstanceGuid = service.Guid
 				bindings = append(bindings, binding)
 			}
@@ -293,9 +313,43 @@ func (s *Server) GetMicroserviceComposition(w http.ResponseWriter, r *http.Reque
 	ids := strings.Join(networkPolicyApps[:], ",")
 	access, _ := s.GetAccessById(ids)
 
+	// properties
+	for _, app := range apps {
+		resp, err := http.Get(fmt.Sprintf("%s/config/read/%s?refresh=true", configUrl, app.Entity.Name))
+		if err != nil {
+			logger.Error("failed http get config", err)
+			w.WriteHeader(http.StatusInternalServerError)
+			json.NewEncoder(w).Encode(err)
+			return
+		}
+		defer resp.Body.Close()
+		body, err := ioutil.ReadAll(io.LimitReader(resp.Body, 1<<20))
+		if err != nil {
+			logger.Error("failed http get config response", err)
+			w.WriteHeader(http.StatusInternalServerError)
+			json.NewEncoder(w).Encode(err)
+			return
+		}
+		if code := resp.StatusCode; code < 200 || code > 299 {
+			body = nil
+		}
+		if body != nil {
+			result := strings.Split(string(body), "\n")
+
+			for _, s := range result {
+				if strings.Trim(s, " ") != "" {
+					p := property{}
+					p.AppName = app.Entity.Name
+					p.Properties = s
+					properties = append(properties, p)
+				}
+			}
+		}
+	}
+
 	type microserviceComposition struct {
 		Microservice domain.Compose `json:"microservice"`
-		Apps []domain.Compose `json:"apps"`
+		Apps []domain.AppResource `json:"apps"`
 		Services []domain.ServiceInstanceResource `json:"services"`
 		Bindings []domain.ServiceBinding `json:"bindings"`
 		Routes []route `json:"routes"`
@@ -310,6 +364,7 @@ func (s *Server) GetMicroserviceComposition(w http.ResponseWriter, r *http.Reque
 		Bindings: bindings,
 		Routes: routes,
 		Policies: access.Policies,
+		Properties: properties,
 	}
 
 	w.WriteHeader(http.StatusOK)
@@ -320,7 +375,7 @@ func (s *Server) GetMicroserviceComposition(w http.ResponseWriter, r *http.Reque
 }
 
 func (s *Server) UpdateMicroserviceComposition(w http.ResponseWriter, r *http.Request) {
-	logger := s.logger.Session("micro")
+	logger := s.logger.Session("compose")
 	logger.Debug("UpdateMicroserviceComposition")
 
 	realIds := make(map[string]interface{})
@@ -333,6 +388,7 @@ func (s *Server) UpdateMicroserviceComposition(w http.ResponseWriter, r *http.Re
 		return
 	}
 	composition := request.Composition
+
 
 	session := domain.SessionManager.Load(r)
 	token := &client.CF_TOKEN{}
@@ -349,6 +405,15 @@ func (s *Server) UpdateMicroserviceComposition(w http.ResponseWriter, r *http.Re
 		json.NewEncoder(w).Encode(err)
 		return
 	}
+
+	cf, err := s.uaa.CfClient()
+	if err != nil {
+		logger.Error("failed cf client", err)
+		w.WriteHeader(http.StatusInternalServerError)
+		json.NewEncoder(w).Encode(err)
+		return
+	}
+
 	// get shared domains
 	sharedDomains, err := s.ListSpaceDomains(request.SpaceGuid)
 	if err != nil {
@@ -356,15 +421,7 @@ func (s *Server) UpdateMicroserviceComposition(w http.ResponseWriter, r *http.Re
 		return
 	}
 	sharedDomain := sharedDomains.Resources[0]
-
-	// 1. UpdateMicroserviceStatus
-	appRequest := domain.ComposeRequest{ID: request.ID, Status: request.Status}
-	_, err = s.repositoryFactory.Compose().UpdateMicroserviceStatus(appRequest)
-	if err != nil {
-		logger.Error("[UpdateMicroserviceState] UpdateMicroserviceStatus err >>>", err)
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
+	frontUrl := ""
 
 	var configappName string
 	// 2. create INITIAL services (db, cf)
@@ -476,27 +533,56 @@ func (s *Server) UpdateMicroserviceComposition(w http.ResponseWriter, r *http.Re
 				http.Error(w, err.Error(), http.StatusInternalServerError)
 				return
 			}
-			// 3-4. CF Creating a Route
-			routeData := domain.Route{
-				Host: createdApp.Entity.Name,
-				DomainGuid: sharedDomain.Meta.Guid,
-				SpaceGuid: request.SpaceGuid,
+
+			// front app
+			if app.Entity.State == domain.SAMPLE_APP_FRONT {
+				// 3-4. CF Creating a Route
+				routeData := domain.Route{
+					Host: createdApp.Entity.Name,
+					DomainGuid: sharedDomain.Meta.Guid,
+					SpaceGuid: request.SpaceGuid,
+				}
+				route, err := s.CreateRoute(routeData)
+				if err != nil {
+					logger.Error("[UpdateMicroserviceComposition] CreateRoute err >>>", err)
+					http.Error(w, err.Error(), http.StatusInternalServerError)
+					return
+				}
+				// 3-5. CF Associate Route with the App
+				_, err = s.AssociateRoute(createAppGuid, route.Meta.Guid)
+				if err != nil {
+					logger.Error("[UpdateMicroserviceComposition] AssociateRoute err >>>", err)
+					http.Error(w, err.Error(), http.StatusInternalServerError)
+					return
+				}
+
+				frontUrl = fmt.Sprintf("%s.%s", route.Entity.Host, sharedDomain.Entity.Name)
 			}
-			route, err := s.CreateRoute(routeData)
-			if err != nil {
-				logger.Error("[UpdateMicroserviceComposition] CreateRoute err >>>", err)
-				http.Error(w, err.Error(), http.StatusInternalServerError)
-				return
-			}
-			// 3-5. CF Associate Route with the App
-			_, err = s.AssociateRoute(createAppGuid, route.Meta.Guid)
-			if err != nil {
-				logger.Error("[UpdateMicroserviceComposition] AssociateRoute err >>>", err)
-				http.Error(w, err.Error(), http.StatusInternalServerError)
-				return
+			// gateway app route
+			if strings.HasPrefix(app.Entity.Name, domain.MSA_GATEWAY_APP) {
+				// 3-4. CF Creating a Route
+				routeData := domain.Route{
+					Host: createdApp.Entity.Name,
+					DomainGuid: sharedDomain.Meta.Guid,
+					SpaceGuid: request.SpaceGuid,
+				}
+				route, err := s.CreateRoute(routeData)
+				if err != nil {
+					logger.Error("[UpdateMicroserviceComposition] CreateRoute gateway err >>>", err)
+					http.Error(w, err.Error(), http.StatusInternalServerError)
+					return
+				}
+				// 3-5. CF Associate Route with the App
+				_, err = s.AssociateRoute(createAppGuid, route.Meta.Guid)
+				if err != nil {
+					logger.Error("[UpdateMicroserviceComposition] AssociateRoute gateway err >>>", err)
+					http.Error(w, err.Error(), http.StatusInternalServerError)
+					return
+				}
+
 			}
 			// 3-6. Insert db
-			appRequest := domain.MicroserviceApp{MicroID: request.ID, AppGuid: createAppGuid, SourceGuid: sourceAppGuid}
+			appRequest := domain.MicroserviceApp{MicroID: request.ID, AppGuid: createAppGuid, SourceGuid: sourceAppGuid, Essential: app.Entity.State}
 			if msApps[sourceAppGuid] != nil {
 				_, err = s.repositoryFactory.Compose().UpdateMicroserviceApp(appRequest)
 			} else {
@@ -523,16 +609,29 @@ func (s *Server) UpdateMicroserviceComposition(w http.ResponseWriter, r *http.Re
 		b := BindingService{}
 		b.App_guid = appGuid
 		b.Service_instance_guid = serviceInstanceGuid
-		_, err := s.CreateBinding(b)
-		if err != nil {
-			var cfErrBody domain.CloudFoundryErrBody
-			json.Unmarshal([]byte(err.Error()), &cfErrBody)
-			if cfErrBody.Message == "The app is already bound to the service." {
-				continue
+
+		isExistServiceInstance := false
+		if sb, err := s.ListServiceBindingByApp(appGuid); err == nil {
+			for _, sbr := range sb.Resources {
+				if sbr.Entity.ServiceInstanceGuid == serviceInstanceGuid {
+					isExistServiceInstance = true
+					break
+				}
 			}
-			logger.Error("[UpdateMicroserviceComposition] CreateBinding err >>>", err)
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
+		}
+
+		if !isExistServiceInstance {
+			_, err := s.CreateBinding(b)
+			if err != nil {
+				var cfErrBody domain.CloudFoundryErrBody
+				json.Unmarshal([]byte(err.Error()), &cfErrBody)
+				if cfErrBody.Message == "The app is already bound to the service." {
+					continue
+				}
+				logger.Error("[UpdateMicroserviceComposition] CreateBinding err >>>", err)
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+				return
+			}
 		}
 	}
 	// 5. add network policy (cf)
@@ -558,6 +657,72 @@ func (s *Server) UpdateMicroserviceComposition(w http.ResponseWriter, r *http.Re
 		}
 	}
 
+	// Delete App
+	for _, delapp := range composition.DelApps.Resources {
+		if strings.HasPrefix(delapp.Entity.Name, domain.MSA_GATEWAY_APP) == false {
+			//fmt.Println(delapp)
+			if sb, err := s.ListServiceBindingByApp(delapp.Meta.Guid); err == nil {
+				for _, sbr := range sb.Resources {
+					// delete service binding
+					if err := s.DeleteServiceBindingByApp(delapp.Meta.Guid, sbr.Meta.Guid); err != nil {
+						logger.Error("DeleteMicroservice Servicebindingg error", err, lager.Data{"appGUID": delapp.Meta.Guid})
+					}
+				}
+			}
+			// delete route
+			if listroutes, err := s.ListRouteForApp(delapp.Meta.Guid); err == nil {
+				for _, route := range listroutes.Resources {
+					if err := s.DeleteRoute(route.Meta.Guid); err != nil {
+						logger.Error("DeleteRouteForApp error", err, lager.Data{"appGUID": delapp.Meta.Guid})
+					}
+				}
+			}
+
+
+			// delete app
+			if err := cf.DeleteApp(delapp.Meta.Guid); err != nil {
+				logger.Error("DeleteMicroservice error", err, lager.Data{"appGUID": delapp.Meta.Guid})
+			}
+
+			appRequest := domain.MicroserviceApp{MicroID: request.ID, AppGuid: delapp.Meta.Guid, SourceGuid: ""}
+			err = s.repositoryFactory.Compose().DeleteMicroserviceApp(appRequest)
+			if err != nil {
+				logger.Error("[UpdateMicroserviceComposition] Delete MicroserviceApp err", err)
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+				return
+			}
+		}
+	}
+	//  Delete Service
+	for _, delservice := range composition.DelServices.Resources {
+		// delete service binding
+		//if err := s.DeleteServiceBinding(delservice.Meta.Guid); err != nil {
+		//	logger.Error("DeleteMicroservice DeleteServiceBinding error", err, lager.Data{"appGUID": delservice.Meta.Guid})
+		//}
+
+		// delete service instance (recursive)
+		if err := s.DeleteServiceInstanceByGuid(delservice.Meta.Guid); err != nil {
+			logger.Error("DeleteMicroservice Serviceinstance error", err, lager.Data{"appGUID": delservice.Meta.Guid})
+		}
+
+		serviceRequest := domain.MicroserviceService{MicroID: request.ID, ServiceGuid: delservice.Meta.Guid}
+		err = s.repositoryFactory.Compose().DeleteMicroserviceService(serviceRequest)
+		if err != nil {
+			logger.Error("[UpdateMicroserviceComposition] Delete MicroserviceApp err", err)
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+	}
+
+	// 1. UpdateMicroserviceStatus
+	appRequest := domain.ComposeRequest{ID: request.ID, Status: request.Status, Version: request.Version, Visible: request.Visible, Url: frontUrl }
+	_, err = s.repositoryFactory.Compose().UpdateMicroservice(appRequest)
+	if err != nil {
+		logger.Error("[UpdateMicroserviceState] UpdateMicroserviceStatus err >>>", err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
 	// 6. add route (configapp)
 	// check configapp status: running
 	configapps, err := s.GetAppByName(configappName)
@@ -577,11 +742,15 @@ func (s *Server) UpdateMicroserviceComposition(w http.ResponseWriter, r *http.Re
 	}
 	var jsonData []string
 	for _, route := range composition.Routes {
-		jsonData = append(jsonData, fmt.Sprintf(`"zuul.routes.%s.serviceId":"%s"`,route["service"].(string),route["service"].(string)))
-		jsonData = append(jsonData, fmt.Sprintf(`"zuul.routes.%s.path":"%s"`,route["service"].(string),route["path"].(string)))
+		if route["service"].(string) != "" {
+			jsonData = append(jsonData, fmt.Sprintf(`{"zuul.routes.%s.serviceId":"%s"}`,route["service"].(string),route["service"].(string)))
+			jsonData = append(jsonData, fmt.Sprintf(`{"zuul.routes.%s.path":"%s"}`,route["service"].(string),route["path"].(string)))
+		}
 	}
-	var jsonStr = []byte(`{`+strings.Join(jsonData,",")+`}`)
-	endpoint := fmt.Sprintf("http://%s.%s/config/write/apigateway", configappName, sharedDomain.Entity.Name)
+	var jsonStr = []byte(`[`+strings.Join(jsonData,",")+`]`)
+	basicUser := configapp.Entity.Environment["basic-user"]
+	basicSecret := configapp.Entity.Environment["basic-secret"]
+	endpoint := fmt.Sprintf("http://%s:%s@%s.%s/config/write/apigateway", basicUser, basicSecret, configappName, sharedDomain.Entity.Name)
 	req, _ := http.NewRequest("POST", endpoint, bytes.NewBuffer(jsonStr))
 	req.Header.Set("Content-Type", "application/json")
 
@@ -606,7 +775,7 @@ func (s *Server) UpdateMicroserviceComposition(w http.ResponseWriter, r *http.Re
 			return
 		}
 
-		endpoint := fmt.Sprintf("http://%s.%s/config/write/%s", configappName, sharedDomain.Entity.Name, config["app"])
+		endpoint := fmt.Sprintf("http://%s:%s@%s.%s/config/write/%s", basicUser, basicSecret, configappName, sharedDomain.Entity.Name, config["app"])
 		req, _ := http.NewRequest("POST", endpoint, bytes.NewBuffer(property))
 		req.Header.Set("Content-Type", "application/json")
 
@@ -621,11 +790,40 @@ func (s *Server) UpdateMicroserviceComposition(w http.ResponseWriter, r *http.Re
 			return
 		}
 		defer response.Body.Close()
+
+	}
+
+	// Refresh properties for all app.
+	if err := refreshProperties(fmt.Sprintf("%s", basicUser), fmt.Sprintf("%s", basicSecret), configappName, sharedDomain.Entity.Name); err != nil {
+		logger.Error("[UpdateMicroserviceComposition] refreshProperties err", err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
 	}
 }
 
+func refreshProperties(basicUser, basicSecret, configappName, sharedDomain string) error {
+	// Refresh properties for all app.
+	endpoint := fmt.Sprintf("http://%s:%s@%s.%s/refresh", basicUser, basicSecret, configappName, sharedDomain)
+	var jsonStr = []byte("")
+	req, _ := http.NewRequest("POST", endpoint, bytes.NewBuffer(jsonStr))
+	req.Header.Set("Content-Type", "application/json")
+
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+	}
+	client := &http.Client{Transport: tr}
+	response, err := client.Do(req)
+	if err != nil {
+		return fmt.Errorf("[UpdateMicroserviceComposition] add config err: %s ", err.Error())
+	}
+
+	defer response.Body.Close()
+
+	return nil
+}
+
 func (s *Server) UpdateMicroserviceState(w http.ResponseWriter, r *http.Request) {
-	logger := s.logger.Session("micro")
+	logger := s.logger.Session("compose")
 	logger.Debug("UpdateMicroserviceState")
 
 	strId := r.FormValue(":id")
@@ -640,7 +838,7 @@ func (s *Server) UpdateMicroserviceState(w http.ResponseWriter, r *http.Request)
 
 	token, err := s.uaa.GetAuthToken()
 	if err != nil {
-		logger.Error("failed cf get auth token", err)
+		logger.Error("[UpdateMicroserviceState] failed cf get auth token", err)
 		w.WriteHeader(http.StatusInternalServerError)
 		json.NewEncoder(w).Encode(err)
 		return

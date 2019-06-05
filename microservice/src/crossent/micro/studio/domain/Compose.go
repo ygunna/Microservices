@@ -1,5 +1,7 @@
 package domain
 
+import "time"
+
 const (
 	STATUS_INITIAL = "INITIAL"
 	STATUS_RUNNING = "RUNNING"
@@ -23,9 +25,11 @@ type ComposeRequest struct {
 	Description string   `json:"description,omitempty"`
 	Apps        Apps     `json:"apps,omitempty"`
 	Services    ServiceInstances `json:"services,omitempty"`
-	Visible     bool     `json:"visible,omitempty"`
+	Visible     bool     `json:"visible,string,omitempty"`
 	Status      string   `json:"status,omitempty"`
 	Composition MicroserviceComposition `json:"composition,omitempty"`
+	UserId      string   `json:"userId,omitempty"`
+	Url         string   `json:"url,omitempty"`
 }
 
 type MicroserviceComposition struct {
@@ -35,6 +39,9 @@ type MicroserviceComposition struct {
 	Policies    []Policy `json:"policies"`
 	Routes      []map[string]interface{} `json:"routes"`
 	Configs     []map[string]interface{} `json:"configs"`
+	DelApps        Apps     `json:"delapps,omitempty"`
+	DelServices    ServiceInstances `json:"delservices,omitempty"`
+	DelServiceBindings    ServiceBindings `json:"delserviceBindings,omitempty"`
 }
 
 type MicroserviceService struct {
@@ -50,6 +57,7 @@ type MicroserviceApp struct {
 	MicroID     int    `json:"microId,omitempty"`
 	AppGuid     string `json:"appGuid,omitempty"`
 	SourceGuid  string `json:"sourceGuid,omitempty"`
+	Essential   string `json:"essential,omitempty"`
 }
 
 
@@ -134,7 +142,30 @@ type App struct {
 	State                    string                 `json:"state"`
 	SpaceGuid                string                 `json:"space_guid"`
 	Buildpack                string                 `json:"buildpack"`
-	Environment              map[string]interface{} `json:"environment_json"`
+	Command                  string                 `json:"command"`
+	Environment              map[string]interface{} `json:"environment_json,omitempty"`
+	Description              string                 `json:"description,omitempty"`
+	Essential				 string					`json:"essential,omitempty"`
+	AppType			 string			`json:"app_type,omitempty"`
+}
+type AppStats struct {
+	State string `json:"state"`
+	Stats struct {
+		      Name      string   `json:"name"`
+		      Uris      []string `json:"uris"`
+		      Host      string   `json:"host"`
+		      Port      int      `json:"port"`
+		      Uptime    int      `json:"uptime"`
+		      MemQuota  int      `json:"mem_quota"`
+		      DiskQuota int      `json:"disk_quota"`
+		      FdsQuota  int      `json:"fds_quota"`
+		      Usage     struct {
+					Time time.Time `json:"time"`
+					CPU  float64   `json:"cpu"`
+					Mem  int       `json:"mem"`
+					Disk int       `json:"disk"`
+				} `json:"usage"`
+	      } `json:"stats"`
 }
 
 type Policies struct {
@@ -144,16 +175,16 @@ type Policies struct {
 
 type Policy struct {
 	Source struct {
-		ID string `json:"id"`
-	} `json:"source"`
+		       ID string `json:"id"`
+	       } `json:"source"`
 	Destination struct {
-		ID string `json:"id"`
-		Port struct {
-			Start int `json:"start"`
-			End   int `json:"end"`
-		} `json:"ports"`
-		Protocol string `json:"protocol"`
-	} `json:"destination"`
+		       ID string `json:"id"`
+		       Port struct {
+				  Start int `json:"start"`
+				  End   int `json:"end"`
+			  } `json:"ports"`
+		       Protocol string `json:"protocol"`
+	       } `json:"destination"`
 }
 
 type Results struct {

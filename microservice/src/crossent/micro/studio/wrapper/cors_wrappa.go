@@ -11,7 +11,6 @@ import (
 func HttpWrap(handler http.Handler) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 
-		fmt.Println(fmt.Sprintf("[hyo] r.Method = %s, r.RequestURI = %s", r.Method, r.RequestURI))
 		if origin := r.Header.Get("Origin"); origin != "" {
 			w.Header().Set("Access-Control-Allow-Origin", origin)
 			w.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, PATCH, DELETE")
@@ -43,21 +42,21 @@ func HttpWrap(handler http.Handler) http.HandlerFunc {
 			} else {
 				var uaaToken uaa.Token
 				uaaToken.Access = token
-				expired, err := uaaToken.IsExpired()
-				if err != nil {
-					session.Remove(w, domain.UAA_TOKEN_NAME)
-					b := []byte(fmt.Sprintf("UAA token Error. %v", err))
-					w.WriteHeader(http.StatusUnauthorized)
-					w.Write(b)
-					return
-				}
-				if expired {
-					session.Remove(w, domain.UAA_TOKEN_NAME)
-					b := []byte("UAA token has expired.")
-					w.WriteHeader(http.StatusUnauthorized)
-					w.Write(b)
-					return
-				}
+				//expired, err := uaaToken.IsExpired()
+				//if err != nil {
+				//	session.Remove(w, domain.UAA_TOKEN_NAME)
+				//	b := []byte(fmt.Sprintf("UAA token Error. %v", err))
+				//	w.WriteHeader(http.StatusUnauthorized)
+				//	w.Write(b)
+				//	return
+				//}
+				//if expired {
+				//	session.Remove(w, domain.UAA_TOKEN_NAME)
+				//	b := []byte("UAA token has expired.")
+				//	w.WriteHeader(http.StatusUnauthorized)
+				//	w.Write(b)
+				//	return
+				//}
 			}
 		}
 

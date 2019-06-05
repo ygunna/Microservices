@@ -8,3 +8,10 @@
   position: inherit;
   width: 300px !important;
 }
+
+.box-wrap {
+  font-size: 17px;
+  font-weight: 400;
+}
+
+b {color: red;}

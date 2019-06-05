@@ -1,13 +1,17 @@
-import { Injectable } from '@angular/core';
+import { Injectable, EventEmitter } from '@angular/core';
 import * as d3 from 'd3';
 import { ForceLink } from 'd3-force';
 
 @Injectable()
 export class D3ViewService{
+  forceSimulation: any;
+  extendNode: EventEmitter<number> = new EventEmitter<number>();
 
   constructor() {}
 
   updatePath(nodes: any, links: any) {
+    let ee = this.extendNode;
+
     let svg = d3.select("svg").select("g");
 
     let div = d3.select("body").append("div")
@@ -20,7 +24,7 @@ export class D3ViewService{
     let height: number = 600;
 
     // https://github.com/d3/d3-scale-chromatic
-    let color: Array<string> = ['#9bd0c6','#ffffb6','#bbb8d8','#eb8773','#88aed0','#f3b768','#bbdc71','#f4cee4','#d8d8d8','#b182ba','#d1e9c5','#fdee78'];
+    let color: Array<string> = ['#9bd0c6','#ffffb6','#bbb8d8','#eb8773','#88aed0','#f3b768','#bbdc71','#f4cee4','#d8d8d8','#b182ba','#d1e9c5','#fdee78','#a3adbd'];
 
     let simulation = d3.forceSimulation()
       .force("link", d3.forceLink().id(function(d) { return d['id']; }))
@@ -87,6 +91,13 @@ export class D3ViewService{
         div.transition()
           .duration(10)
           .style("opacity", 0);
+      })
+      .on("click", function(d) {
+        simulation.stop();
+        if (d['type'] == 'API' && d['active'] != 'extended') {
+          d['active'] = 'extended';
+          ee.emit(d['id']);
+        }
       });
     // .on("end", function (d) {
     //   if (!d3.event.active) simulation.alphaTarget(0);
@@ -113,13 +124,17 @@ export class D3ViewService{
             .transition()
             .on("start", repeat);
         }
+        if (d['type'] == 'API' && d['active'] != 'extended') {
+          d3.active(this)
+            .style('cursor', 'hand');
+        }
       });
 
 
 
     node.append("text")
       .attr("dx", function (d) {
-        return d['type'] == 'App' ? "-12" : "-21";
+        return d['type'] == 'App' || d['type'] == 'API'  ? "-12" : "-21";
       })
       .attr("dy", 3)
       .style('fill', 'white')
@@ -189,7 +204,11 @@ export class D3ViewService{
 
     simulation.restart();
 
+    this.forceSimulation = simulation;
+  }
 
+  stopSvg() {
+    this.forceSimulation.stop();
   }
 
 }

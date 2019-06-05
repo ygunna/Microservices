@@ -10,6 +10,12 @@ packages:
   - microservice-broker
   - cf-cli
 
+provides:
+  - name: servicebroker
+    type: servicebroker
+    properties:
+      - broker.port
+
 properties:
   broker.username:
     description: microservice broker username

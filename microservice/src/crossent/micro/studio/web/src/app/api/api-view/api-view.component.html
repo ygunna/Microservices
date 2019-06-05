@@ -1,0 +1,105 @@
+<h2 class="ui dividing header">
+  <div class="ui huge breadcrumb">
+    <a routerLink="/apilist" class="section">마이크로서비스 API 목록</a>
+    <i class="right chevron icon divider"></i>
+    <div class="active section">마이크로서비스 API 조회</div>
+  </div>
+</h2>
+
+<!--container-->
+<div class="ui main container">
+
+  <!--contents-->
+  <div class="column contents-area mb40 mt40">
+
+    <!--board-->
+    <div class="ui main container page-board form-board">
+      <div class="box-wrap wrap-p0">
+        <div>
+          <form>
+            <div class="ui attached message">
+              <div class="header">
+                API Frontend
+              </div>
+            </div>
+            <div class="ui attached segment">
+              <div class="ui form">
+                <div class="two fields">
+                  <div class="field">
+                    <label>분류</label>
+                    <input id="part" name="part" required="" type="text" readonly value="{{microapi.part | codeFilter}}">
+                  </div>
+                  <div class="field">
+                    <label>Name</label>
+                    <input id="name" name="name" required="" type="text" readonly value="{{microapi.name}}">
+                  </div>
+                </div>
+                <div class="two fields">
+                  <div class="field">
+                    <label>Host</label>
+                    <input type="text" readonly value="{{microapi.host}}">
+                  </div>
+                  <div class="field">
+                    <label>Path Prefix</label>
+                    <input required="" type="text" readonly value="{{microapi.path}}">
+                  </div>
+                </div>
+                <!-- div class="two fields">
+                  <div class="field">
+                    <label>Method</label>
+                    <input required="" type="text" readonly>
+                  </div>
+                  <div class="field">
+                    <label>Path strip</label>
+                    <input required="" type="text" readonly>
+                  </div>
+                </div -->
+                <div class="field">
+                  <label>Description</label>
+                  <textarea name="description" rows="3" readonly>{{microapi.description}}</textarea>
+                </div>
+                <div class="field">
+                  <p></p>
+                  <button class="fluid ui button" type="button" (click)="getSwagger()">Rest API</button>
+                </div>
+                <div class="field">
+                  <iframe [src]="iframeSrc" height="500" width="100%" style="border:1px solid #e0e1e2" [hidden]="isIframe==false"></iframe>
+                </div>
+
+              </div>
+            </div>
+
+            <!--
+            <div class="ui attached message">
+              <div class="header">
+                Auth
+              </div>
+            </div>
+            <div class="ui attached segment">
+              <div class="ui form">
+                <h5 class="ui dividing header" style="font-weight: normal">Basic Auth</h5>
+                <div class="two fields">
+                  <div class="field">
+                    <input placeholder="username" type="text">
+                  </div>
+                  <div class="field">
+                    <input placeholder="password" type="password">
+                  </div>
+                </div>
+
+                <div class="position-center mt40">
+                  <button class="ui button gray" [routerLink]="['/apilist']">취소</button>
+                  <button class="ui primary button">등록</button>
+                </div>
+              </div>
+            </div>
+            -->
+          </form>
+        </div>
+      </div>
+    </div>
+    <!--//board-->
+  </div>
+  <!--//contents-->
+</div>
+<!--//container-->

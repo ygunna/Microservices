@@ -65,3 +65,24 @@ div.scroll-list {
 .drag-transit {
   border: #3500FF dashed 2px;
 }
+
+/* api */
+.ui.grid.api {
+  margin-top: 0px;
+  border: 0px;
+}
+
+.ui.grid.api .column {
+  border: 0px;
+}
+
+.ui.grid.api .column .close {
+  cursor: pointer;
+  position: relative;
+  top: -1.5rem;
+  left: -0.5rem;
+  font-size: 1.25em;
+  width: 2.25rem;
+  height: 2.25rem;
+  padding: .625rem 0 0 0;
+}

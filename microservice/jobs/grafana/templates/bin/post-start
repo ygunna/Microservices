@@ -1,0 +1,10 @@
+#!/bin/bash
+
+#echo "[$(date)] Calling 'create-update-datasources' ..."
+#$(dirname $0)/create-update-datasources
+
+#echo "[$(date)] Calling 'create-update-dashboards' ..."
+#$(dirname $0)/create-update-dashboards
+
+echo "[$(date)] Calling 'grafana-users' ..."
+$(dirname $0)/grafana-users

@@ -18,6 +18,11 @@ type ComposeRepository interface {
 	UpdateMicroserviceApp(domain.MicroserviceApp) (bool, error)
 	ListMicroserviceAppApp(int) ([]domain.MicroserviceApp, error)
 	ListMicroserviceAppService(int) ([]domain.MicroserviceService, error)
+	GetMicroserviceApp(int, string) (domain.MicroserviceApp, error)
+
+	ListMicroserviceByName(string) (int, error)
+	DeleteMicroserviceService(domain.MicroserviceService) error
+	DeleteMicroserviceApp(domain.MicroserviceApp) error
 }
 
 type composeRepository struct {
@@ -44,8 +49,8 @@ func (c *composeRepository) ListCompose() ([]domain.Compose, error) {
 func (c *composeRepository) CreateMicroservice(r domain.ComposeRequest) (int, error) {
 	var id int
 	err := psql.Insert("micro_app").
-		Columns("id", "name", "org_guid", "space_guid", "version", "description", "visible", "status").
-		Values(sq.Expr("nextval('micro_app_id_seq')"), r.Name, r.OrgGuid, r.SpaceGuid, r.Version, r.Description, r.Visible, r.Status).
+		Columns("id", "name", "org_guid", "space_guid", "version", "description", "visible", "status, user_id").
+		Values(sq.Expr("nextval('micro_app_id_seq')"), r.Name, r.OrgGuid, r.SpaceGuid, r.Version, r.Description, r.Visible, r.Status, r.UserId).
 		Suffix("RETURNING id").
 		RunWith(c.conn).
 		QueryRow().
@@ -58,15 +63,31 @@ func (c *composeRepository) CreateMicroservice(r domain.ComposeRequest) (int, er
 }
 
 func (c *composeRepository) UpdateMicroservice(r domain.ComposeRequest) (bool, error) {
-	_, err := psql.Update("micro_app").
-		Set("name", r.Name).
-		Set("version", r.Version).
-		Set("visible", r.Visible).
-		Where(sq.Eq{"id": r.ID}).
-		RunWith(c.conn).
-		Exec()
-	if err != nil {
-		return false, err
+	if r.Url != "" {
+		_, err := psql.Update("micro_app").
+		//Set("name", r.Name).
+			Set("version", r.Version).
+			Set("visible", r.Visible).
+			Set("status", r.Status).
+			Set("url", r.Url).
+			Where(sq.Eq{"id": r.ID}).
+			RunWith(c.conn).
+			Exec()
+		if err != nil {
+			return false, err
+		}
+	} else {
+		_, err := psql.Update("micro_app").
+		//Set("name", r.Name).
+			Set("version", r.Version).
+			Set("visible", r.Visible).
+			Set("status", r.Status).
+			Where(sq.Eq{"id": r.ID}).
+			RunWith(c.conn).
+			Exec()
+		if err != nil {
+			return false, err
+		}
 	}
 
 	return true, nil
@@ -105,8 +126,8 @@ func (c *composeRepository) CreateMicroserviceService(r domain.MicroserviceServi
 
 func (c *composeRepository) CreateMicroserviceApp(r domain.MicroserviceApp) (bool, error) {
 	result, err := psql.Insert("micro_app_app").
-		Columns("id", "micro_id, app_guid, source_guid").
-		Values(sq.Expr("nextval('micro_app_app_id_seq')"), r.MicroID, r.AppGuid, r.SourceGuid).
+		Columns("id", "micro_id, app_guid, source_guid, essential").
+		Values(sq.Expr("nextval('micro_app_app_id_seq')"), r.MicroID, r.AppGuid, r.SourceGuid, r.Essential).
 		RunWith(c.conn).
 		Exec()
 	if err != nil {
@@ -202,4 +223,65 @@ func (c *composeRepository) ListMicroserviceAppService(id int) ([]domain.Microse
 	}
 
 	return services, nil
+}
+
+func (c *composeRepository) GetMicroserviceApp(id int, essential string) (domain.MicroserviceApp, error) {
+	app := domain.MicroserviceApp{}
+	err := psql.Select("id, app_guid").
+		From("micro_app_app").
+		Where(sq.And{sq.Eq{"micro_id": id}, sq.Eq{"essential": essential}}).
+		RunWith(c.conn).
+		QueryRow().
+		Scan(&app.ID, &app.AppGuid)
+	if err != nil {
+		return app, err
+	}
+
+	return app, nil
+}
+
+func (c *composeRepository) ListMicroserviceByName(name string) (int, error) {
+	var count int
+	err := psql.Select("count(id)").
+		From("micro_app").
+		Where(sq.Eq{"name": name}).
+		RunWith(c.conn).
+		QueryRow().
+		Scan(&count)
+	if err != nil {
+		return 0, err
+	}
+
+	return count, nil
+}
+
+
+func (c *composeRepository) DeleteMicroserviceService(r domain.MicroserviceService) error {
+	_, err := psql.Delete("micro_app_service").
+		Where(sq.Eq{
+		"service_guid": r.ServiceGuid,
+	}).
+		RunWith(c.conn).
+		Exec()
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (c *composeRepository) DeleteMicroserviceApp(r domain.MicroserviceApp) error {
+	_, err := psql.Delete("micro_app_app").
+		Where(sq.Eq{
+		"app_guid": r.AppGuid,
+	}).
+		RunWith(c.conn).
+		Exec()
+
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

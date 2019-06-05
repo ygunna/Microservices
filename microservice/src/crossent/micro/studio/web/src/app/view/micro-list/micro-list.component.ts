@@ -8,7 +8,7 @@ import { ApiService } from '../../shared/api.service'
 
 @Component({
   selector: 'app-micro-list',
-  templateUrl: './micro-list.component2.html',
+  templateUrl: './micro-list.component.html',
   styleUrls: ['./micro-list.component.css']
 })
 export class MicroListComponent implements OnInit {

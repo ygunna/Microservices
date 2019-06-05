@@ -1,0 +1,366 @@
+<%
+
+  # ####################################################################################################################
+  # refrence : https://github.com/gstackio/traefik-boshrelease/blob/master/jobs/traefik/templates/conf/traefik.toml
+  # ####################################################################################################################
+
+    # -------------------------------------------------------- #
+    # The following code is pulled out htauth's 'algorithm.rb' #
+    # -------------------------------------------------------- #
+    #
+    # See: <https://github.com/copiousfreetime/htauth/blob/master/lib/htauth/algorithm.rb>
+
+    require 'securerandom'
+
+    SALT_CHARS    = (%w[ . / ] + ("0".."9").to_a + ('A'..'Z').to_a + ('a'..'z').to_a).freeze
+
+    # Internal: 8 bytes of random items from SALT_CHARS
+    def gen_salt
+      chars = []
+      8.times { chars << SALT_CHARS[SecureRandom.random_number(SALT_CHARS.size)] }
+      chars.join('')
+    end
+
+    # Internal: this is not the Base64 encoding, this is the to64()
+    # method from the apache protable runtime library
+    def to_64(number, rounds)
+      r = StringIO.new
+      rounds.times do |x|
+        r.print(SALT_CHARS[number % 64])
+        number >>= 6
+      end
+      return r.string
+    end
+
+
+    # -------------------------------------------------- #
+    # The following code is pulled out htauth's 'md5.rb' #
+    # -------------------------------------------------- #
+    #
+    # See: <https://github.com/copiousfreetime/htauth/blob/master/lib/htauth/md5.rb>
+
+    require 'digest/md5'
+
+    DIGEST_LENGTH = 16
+
+    def prefix
+      "$apr1$"
+    end
+
+    # this algorigthm pulled straight from apr_md5_encode() and converted to ruby syntax
+    #
+    # Internal: an implementation of the MD5 based encoding algorithm
+    # as used in the apache htpasswd -m option
+    def encode(password)
+      salt = gen_salt
+
+      primary = ::Digest::MD5.new
+      primary << password
+      primary << prefix
+      primary << salt
+
+      md5_t = ::Digest::MD5.digest("#{password}#{salt}#{password}")
+
+      l = password.length
+      while l > 0 do
+        slice_size = ( l > DIGEST_LENGTH ) ? DIGEST_LENGTH : l
+        primary << md5_t[0, slice_size]
+        l -= DIGEST_LENGTH
+      end
+
+      # weirdness
+      l = password.length
+      while l != 0
+        case (l & 1)
+        when 1
+          primary << 0.chr
+        when 0
+          primary << password[0,1]
+        end
+        l >>= 1
+      end
+
+      pd = primary.digest
+
+      encoded_password = "#{prefix}#{salt}$"
+
+      # apr_md5_encode has this comment about a 60Mhz Pentium above this loop.
+      1000.times do |x|
+        ctx = ::Digest::MD5.new
+        ctx << (( ( x & 1 ) == 1 ) ? password : pd[0,DIGEST_LENGTH])
+        (ctx << salt) unless ( x % 3 ) == 0
+        (ctx << password) unless ( x % 7 ) == 0
+        ctx << (( ( x & 1 ) == 0 ) ? password : pd[0,DIGEST_LENGTH])
+        pd = ctx.digest
+      end
+
+
+      pd = pd.bytes.to_a
+
+      l = (pd[ 0]<<16) | (pd[ 6]<<8) | pd[12]
+      encoded_password << to_64(l, 4)
+
+      l = (pd[ 1]<<16) | (pd[ 7]<<8) | pd[13]
+      encoded_password << to_64(l, 4)
+
+      l = (pd[ 2]<<16) | (pd[ 8]<<8) | pd[14]
+      encoded_password << to_64(l, 4)
+
+      l = (pd[ 3]<<16) | (pd[ 9]<<8) | pd[15]
+      encoded_password << to_64(l, 4)
+
+      l = (pd[ 4]<<16) | (pd[10]<<8) | pd[ 5]
+      encoded_password << to_64(l, 4)
+      encoded_password << to_64(pd[11],2)
+
+      return encoded_password
+    end
+
+-%>
+################################################################
+# Global configuration
+################################################################
+
+# Duration to give active requests a chance to finish before Traefik stops.
+#
+# Optional
+# Default: "10s"
+#
+# graceTimeOut = "10s"
+
+# Enable debug mode.
+#
+# Optional
+# Default: false
+#
+debug = <%= p('traefik.debug') %>
+
+# Periodically check if a new version has been released.
+#
+# Optional
+# Default: true
+#
+# checkNewVersion = false
+
+# Backends throttle duration.
+#
+# Optional
+# Default: "2s"
+#
+# ProvidersThrottleDuration = "2s"
+
+# Controls the maximum idle (keep-alive) connections to keep per-host.
+#
+# Optional
+# Default: 200
+#
+# MaxIdleConnsPerHost = 200
+
+# If set to true invalid SSL certificates are accepted for backends.
+# This disables detection of man-in-the-middle attacks so should only be used on secure backend networks.
+#
+# Optional
+# Default: false
+#
+InsecureSkipVerify = <%= p('traefik.accept_invalid_backend_certificates') %>
+
+# Register Certificates in the RootCA.
+#
+# Optional
+# Default: []
+#
+# RootCAs = [ "/mycert.cert" ]
+
+# Entrypoints to be used by frontends that do not specify any entrypoint.
+# Each frontend can specify its own entrypoints.
+#
+# Optional
+# Default: ["http"]
+#
+# defaultEntryPoints = ["http", "https"]
+
+
+
+################################################################
+# Traefik logs configuration
+################################################################
+
+# Log level
+#
+# Optional
+# Default: "ERROR"
+#
+# Accepted values, in order of severity: "DEBUG", "INFO", "WARN", "ERROR", "FATAL", "PANIC"
+# Messages at and above the selected level will be logged.
+#
+logLevel = "<%= p('traefik.log_level') %>"
+
+# Traefik logs file
+# If not defined, logs to stdout
+#
+# Optional
+#
+[traefikLog]
+filePath = "/var/vcap/data/sys/log/traefik/traefik.log"
+format   = "json"
+
+# NOTE: after version 1.4.6, the new [traefikLog] section is introduced.
+# See:
+#   <https://github.com/containous/traefik/blob/837db9a/traefik.sample.toml#L35-L55>
+# Compared to:
+#   <https://github.com/containous/traefik/blob/v1.4.6/traefik.sample.toml#L12-L24>
+
+
+
+<% if p('traefik.access_logs.enabled') -%>
+################################################################
+# Access logs configuration
+################################################################
+
+# Enable access logs
+# By default it will write to stdout and produce logs in the textual
+# Common Log Format (CLF), extended with additional fields.
+#
+# Optional
+#
+[accessLog]
+
+# Sets the file path for the access log. If not specified, stdout will be used.
+# Intermediate directories are created if necessary.
+#
+# Optional
+# Default: os.Stdout
+#
+filePath = "/var/vcap/data/sys/log/traefik/access.log"
+
+# Format is either "json" or "common".
+#
+# Optional
+# Default: "common"
+#
+# format = "common"
+<% end -%>
+
+
+
+################################################################
+# Entry Points configuration
+################################################################
+
+[entryPoints]
+<% if p('traefik.http.enabled') -%>
+  [entryPoints.http]
+  address = ":<%= p('traefik.http.port') %>"
+<% end -%>
+<% if p('traefik.tls.enabled') -%>
+  [entryPoints.https]
+  address = ":443"
+<% if_p('traefik.tls.cert') do |cert| -%>
+    [entryPoints.https.tls]
+      [[entryPoints.https.tls.certificates]]
+      CertFile = "/var/vcap/jobs/traefik/tls/traefik-default.crt"
+      KeyFile = "/var/vcap/jobs/traefik/tls/traefik-default.key"
+<% end -%>
+<% end -%>
+
+<% if p('traefik.web.enabled') -%>
+     [entryPoints.traefik]
+       address=":<%= p('traefik.web.port') %>"
+       [entryPoints.traefik.auth]
+         [entryPoints.traefik.auth.basic]
+           users = [
+             "<%= p('traefik.web.basic_auth.username') %>:<%= encode(p('traefik.web.basic_auth.password')) %>",
+           ]
+<% end -%>
+
+<% if p('traefik.web.enabled') -%>
+################################################################
+# API and dashboard configuration
+################################################################
+
+# Enable API and dashboard
+[api]
+
+  # Name of the related entry point
+  #
+  # Optional
+  # Default: "traefik"
+  #
+  entryPoint = "traefik"
+
+  # Enabled Dashboard
+  #
+  # Optional
+  # Default: true
+  #
+  dashboard = true
+
+  [api.statistics]
+    recentErrors = 50
+
+################################################################
+# Enable REST Provider.
+################################################################
+[rest]
+  # Name of the related entry point
+  #
+  # Optional
+  # Default: "traefik"
+  #
+  entryPoint = "traefik"
+
+################################################################
+# Web backend configuration
+################################################################
+#[web]
+
+# Web administration port.
+#
+# Required
+# Default: ":8080"
+#
+#address = ":<%= p('traefik.web.port') %>"
+
+# SSL certificate and key used.
+#
+# Optional
+#
+<% if p('traefik.web.tls.enabled') -%>
+#certFile = "/var/vcap/jobs/traefik/tls/web-backend.crt"
+#keyFile = "/var/vcap/jobs/traefik/tls/web-backend.key"
+<% end -%>
+
+# Set REST API to read-only mode.
+#
+# Optional
+# Default: false
+#
+#readOnly = <%= p('traefik.web.readonly') %>
+
+#[web.auth.basic]
+#users = [ "<%= p('traefik.web.basic_auth.username') %>:<%= encode(p('traefik.web.basic_auth.password')) %>" ]
+<% end -%>
+
+
+
+<% if p('traefik.file.enabled') -%>
+################################################################
+# File backend configuration
+################################################################
+[file]
+
+# Rules file
+# If defined, traefik will load rules from this file,
+# otherwise, it will load rules from current file (cf Sample rules below).
+#
+# Optional
+#
+# filename = "rules.toml"
+filename = "/var/vcap/jobs/traefik/conf/rules.toml"
+
+# Enable watch file changes
+#
+# Optional
+#
+watch = <%= p('traefik.file.watch') %>
+<% end -%>

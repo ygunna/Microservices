@@ -51,6 +51,17 @@ type MicroCommand struct {
 
 	ClientID string `long:"client_id"   default:"micro" description:"Client ID"`
 	ClientSecret string `long:"client_secret"   default:"micro-secret" description:"Client Secret"`
+
+	TraefikApiURL URLFlag `long:"traefik-api-url" default:"http://127.0.0.1:8080" description:"Traefik URL."`
+	TraefikPort uint16 `long:"traefik-port" default:"8089"    description:"Port on which to listen for Traefik HTTP."`
+	TraefikUser string `long:"traefik-user"   default:"sudouser" description:"Traefik sudo user"`
+	TraefikPassword string `long:"traefik-password"   default:"sudouser" description:"Traefik sudo password"`
+
+	ExternalURL URLFlag `long:"external-url" default:"http://127.0.0.1:8080" description:"Studio URL."`
+
+	GrafanaURL URLFlag `long:"grafana-url" default:"http://127.0.0.1:3003" description:"Grafana URL."`
+	GrafanaPort uint16 `long:"grafana-port" default:"3003"    description:"Port on which to listen for Grafana HTTP."`
+	GrafanaAdminPassword string `long:"grafana-admin-password"   default:"adminpassword" description:"Grafana admin password"`
 }
 
 type connectionRetryingDriver struct {
@@ -65,7 +76,9 @@ func (cmd *MicroCommand) Execute(args []string) error {
 
 	logger, _ := cmd.constructLogger()
 
-	uaa := client.NewClient(cmd.ApiUrl, cmd.UaaUrl, cmd.CfUsername, cmd.CfPassword, cmd.ClientID, cmd.ClientSecret)
+	uaa := client.NewClient(cmd.ApiUrl, cmd.UaaUrl, cmd.CfUsername, cmd.CfPassword, cmd.ClientID, cmd.ClientSecret,
+				cmd.TraefikApiURL.String(), cmd.TraefikPort, cmd.TraefikUser, cmd.TraefikPassword,
+				cmd.ExternalURL.String(), cmd.GrafanaURL.String(), cmd.GrafanaPort, cmd.GrafanaAdminPassword)
 
 	httpHandler, err := cmd.constructHTTPHandler(logger, uaa)
 	if err != nil {

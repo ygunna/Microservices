@@ -2,6 +2,9 @@ import { Component, OnInit } from '@angular/core';
 import { Router, NavigationEnd } from '@angular/router';
 import { ApiService } from '../../shared/api.service';
 import { LoaderService } from '../../shared/loader.service'
+import { AuthService } from '../../shared/auth.service';
+
+declare const $: any;
 
 @Component({
   selector: 'app-layout-header',
@@ -15,7 +18,8 @@ export class HeaderComponent implements OnInit {
 
   constructor(private apiService: ApiService,
               private loaderService: LoaderService,
-              private router:Router) { }
+              private router:Router,
+              public authService: AuthService) { }
 
   ngOnInit() {
     this.loaderService.changeActive.subscribe((d: boolean) => { this.isActive = d; });
@@ -31,6 +35,11 @@ export class HeaderComponent implements OnInit {
         }
       }
     });
+
+    try {
+      $.fn.transition.settings.silent = true;
+    }catch(e){}
+    $('.ui.dropdown.semantic-dropdown').dropdown();
   }
 
   logout() {

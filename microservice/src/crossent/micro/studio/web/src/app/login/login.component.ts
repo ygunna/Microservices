@@ -4,6 +4,7 @@ import { HttpClient, HttpHeaders, HttpResponse } from '@angular/common/http';
 import { ApiService } from '../shared/api.service';
 import { Observable } from 'rxjs/Rx';
 import { CookieService } from 'ngx-cookie-service';
+import { AuthService } from '../shared/auth.service';
 
 class TokenRequest {
   public clientId: string;
@@ -36,7 +37,8 @@ export class LoginComponent implements OnInit {
   constructor(private http: HttpClient,
               private cookieService: CookieService,
               private apiService: ApiService,
-              private router:Router) { }
+              private router:Router,
+              private authService: AuthService) { }
 
   ngOnInit() {
     // this.getCsrfToken();
@@ -44,9 +46,10 @@ export class LoginComponent implements OnInit {
 
   login() {
     var tokenRequest = new TokenRequest('', '', 'password', 'token', this.username, this.password);
-    this.apiService.post('login', tokenRequest).subscribe(
+    this.apiService.post<any>('login', tokenRequest).subscribe(
       res => {
         localStorage.setItem('username', this.username);
+        localStorage.setItem('auth', res.result);
         this.router.navigate(['/list']);
       },
       err => {
@@ -57,20 +60,7 @@ export class LoginComponent implements OnInit {
         }
       }
     );
-    //noinspection TypeScriptValidateTypes
-    /*this.postAutoLogin('https://uaa.bosh-lite.com/oauth/token', headers, tokenRequest)
-      .subscribe(
-        res => {
-          console.log(res.headers.get('Set-Cookie'));
-          console.log(res.headers.get('Content-Type'));
-          console.log(res.body);
-          console.log('X-Uaa-Csrf:'+this.cookieService.get('X-Uaa-Csrf'));
-          console.log('X-UAA-CSRF:'+this.cookieService.get('X-UAA-CSRF'));
-        },
-        err => {
-          console.log(err);
-        }
-      );*/
+
   }
 
   postAutoLogin(url: string, headers: HttpHeaders, data: any): Observable<HttpResponse<any>> {
@@ -82,30 +72,6 @@ export class LoginComponent implements OnInit {
   }
 
 
-/*  getCsrfToken() {
-    const headers = new HttpHeaders({'Authorization': 'application/x-www-form-urlencoded'});
-    //noinspection TypeScriptValidateTypes
-    this.getFullResponseForWriter('http://uaa.bosh-lite.com/oauth/authorize?response_type=code&redirect_uri=http%3A%2F%2Flocalhost%3A4200%2Flist&client_id=portal-id', headers)
-      .subscribe(
-        res => {
-          console.log(res.headers.get('Set-Cookie'));
-          console.log(res.headers.get('Content-Type'));
-          console.log(res.body);
-          console.log('X-Uaa-Csrf:'+this.cookieService.get('X-Uaa-Csrf'));
-          console.log('X-UAA-CSRF:'+this.cookieService.get('X-UAA-CSRF'));
-        },
-        err => {
-          console.log(err);
-        }
-    );
-  }
 
-  getFullResponseForWriter(url: string, headers: HttpHeaders): Observable<HttpResponse<any>> {
-    return this.http.get(url, {
-      headers: headers,
-      // withCredentials: true,
-      observe: 'response'
-    });
-  }*/
 
 }

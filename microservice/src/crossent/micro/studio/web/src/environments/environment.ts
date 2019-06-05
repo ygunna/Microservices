@@ -13,5 +13,7 @@ export const environment = {
   nodeTypeApp: 'App',
   nodeTypeService: 'Service',
   configService: 'config-server',
-  registryService: 'registry-server'
+  registryService: 'registry-server',
+  configServiceLabel: 'micro-config-server',
+  registryServiceLabel: 'micro-registry-server'
 };

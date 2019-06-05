@@ -13,6 +13,7 @@ import { ViewModule } from './view/view.module';
 import { LoginComponent } from './login/login.component';
 import { CookieService } from 'ngx-cookie-service';
 import { AppInterceptor } from './shared/app.interceptor';
+import { ApiModule } from './api/api.module';
 
 
 @NgModule({
@@ -27,7 +28,8 @@ import { AppInterceptor } from './shared/app.interceptor';
     SharedModule,
     ComposeModule,
     ViewModule,
-    FormsModule
+    FormsModule,
+    ApiModule
   ],
   providers: [
     CookieService,

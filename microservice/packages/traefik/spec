@@ -1,0 +1,7 @@
+---
+name: traefik
+
+dependencies: []
+
+files:
+  - traefik/traefik-*_linux-amd64.gz

@@ -96,6 +96,7 @@ export class D3Service {
     function started() {
       D3Service.selectedElement = {type: 'node', element: node};
       d3.selectAll('circle, rect').classed("active", false);
+      d3.selectAll('#info').classed("visible", false);
       d3.selectAll('#close').classed("visible", false);
       d3.selectAll('path').classed("selected", false);
 
@@ -112,6 +113,7 @@ export class D3Service {
       }
       parent.raise();
       d3element.select(node.shape).classed("active", true);
+      d3element.select('#info').classed("visible", true);
       d3element.select('#close').classed("visible", true);
 
       function dragged() {
@@ -303,6 +305,7 @@ export class D3Service {
   applyAppDroppableBehaviour(event, jsonObject, droppedNodes, msaName) {
     simulation.stop();
     d3.selectAll('circle,rect').classed("active", false);
+    d3.selectAll('#info').classed("visible", false);
     d3.selectAll('#close').classed("visible", false);
 
     let _svg = document.querySelector('svg');
@@ -328,6 +331,14 @@ export class D3Service {
       } else {
         name = jsonObject['name'];
       }
+
+      // duplication check
+      for(var node of droppedNodes) {
+        if(node.name == name + '-' + msaName){
+          return false;
+        }
+      }
+
       droppedNodes.push({
         shape: jsonObject['shape'],
         x: droppedSvgX, //event.offsetX,
@@ -348,12 +359,14 @@ export class D3Service {
       var parent = g.select(function() { return (<HTMLElement>this).parentElement; });
       parent.raise();
       g.select(jsonObject['shape']).classed("active", true);
+      g.select('#info').classed("visible", true);
       g.select('#close').classed("visible", true);
     }
   }
 
   applyMouseDownBehaviour() {
     d3.selectAll('circle,rect').classed("active", false);
+    d3.selectAll('#info').classed("visible", false);
     d3.selectAll('#close').classed("visible", false);
     D3Service.selectedElement = null;
     d3.selectAll('path').classed("selected", false);

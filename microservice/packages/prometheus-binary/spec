@@ -1,0 +1,13 @@
+---
+name: prometheus-binary
+
+dependencies:
+
+files:
+  - prometheus/prometheus*.tar.gz
+  - vendor/prometheus/password_file
+  - vendor/prometheus/prometheus.yml
+  - vendor/prometheus/prometheus_template.yml
+  - vendor/prometheus/prometheus_start.sh
+  - vendor/prometheus/targets.json
+  - vendor/prometheus/targets-backend.json

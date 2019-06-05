@@ -2,3 +2,7 @@
   float: right;
   margin-top: -30px;
 }
+
+.content .button.inactive {
+  display: none !important;
+}

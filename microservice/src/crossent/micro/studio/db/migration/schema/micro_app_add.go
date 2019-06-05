@@ -17,6 +17,20 @@ func MicroAppAdd(tx migration.LimitedTx) error {
 		return err
 	}
 
+	_, err = tx.Exec(`
+		ALTER TABLE micro_app ADD column user_id varchar(255) NOT NULL
+	`)
+	if err != nil {
+		return err
+	}
+
+	_, err = tx.Exec(`
+		ALTER TABLE micro_app ADD column active varchar(1) DEFAULT 'Y' NOT NULL
+	`)
+	if err != nil {
+		return err
+	}
+
 
 	return nil
 }

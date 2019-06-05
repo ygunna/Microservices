@@ -2,6 +2,9 @@ golang/golang-linux-amd64-1.8.3.tar.gz:
   size: 90029041
   object_id: 0f353470-247b-4e57-443d-74db40025560
   sha: 838c415896ef5ecd395dfabde5e7e6f8ac943c8e
+grafana/grafana-5.3.4.linux-x64.tar.gz:
+  size: 54609273
+  sha: 09c6391d7179cb55b80563efdf2d5ee219ee437a
 jq:
   size: 3027945
   sha: d8e36831c3c94bb58be34dd544f44a6c6cb88568
@@ -9,4 +12,16 @@ jq/jq-linux64-1.5:
   size: 3027945
   object_id: b78765c7-2ce1-4a12-7a1d-6378a93af246
   sha: d8e36831c3c94bb58be34dd544f44a6c6cb88568
-
+nginx/nginx-1.10.3.tar.gz:
+  size: 911509
+  sha: 95cf32c3e33efc53ac81338a5779fbaa425f02e2
+nginx/pcre-8.42.tar.gz:
+  size: 2081413
+  sha: ee505270446f4c4bf52ac1a371335fdbb14465cb
+prometheus/prometheus-2.5.0.linux-amd64.tar.gz:
+  size: 36142430
+  sha: 428b2f055cf2b2783c620a37c5646c5ac850281f
+traefik/traefik-1.6.5_linux-amd64.gz:
+  size: 14386020
+  object_id: 89f33f41-ab7b-4dc3-6af8-97577983d043
+  sha: b449562715bc41820a126d2fced7a12d6692b9cc

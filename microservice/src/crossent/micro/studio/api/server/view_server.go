@@ -607,6 +607,15 @@ func (s *Server) GetMicroserviceLink(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// external api
+	viewApis, err := s.repositoryFactory.Apigateway().ListMicroserviceAppApi(view.ID)
+	if err != nil {
+		logger.Error("failed ListMicroserviceAppApi", err)
+		w.WriteHeader(http.StatusInternalServerError)
+		json.NewEncoder(w).Encode(err)
+		return
+	}
+
 	token, err := s.uaa.GetAuthToken()
 	if err != nil {
 		logger.Error("failed cf get auth token", err)
@@ -628,6 +637,7 @@ func (s *Server) GetMicroserviceLink(w http.ResponseWriter, r *http.Request) {
 		Type string `json:"type"`
 		Name string `json:"name"`
 		Active string `json:"active"`
+		Essential string `json:"essential"`
 		Group int `json:"group"`
 		Cpu string `json:"cpu"`
 		Memory string `json:"memory"`
@@ -647,6 +657,8 @@ func (s *Server) GetMicroserviceLink(w http.ResponseWriter, r *http.Request) {
 	services := []node{}
 
 	nodes_services := []node{} // node 형태의 서비스 정보
+
+	frontend_app_guid := ""
 
 
 	for _, viewApp := range viewApps {
@@ -669,13 +681,17 @@ func (s *Server) GetMicroserviceLink(w http.ResponseWriter, r *http.Request) {
 
 		if !strings.HasPrefix(summary.Name, domain.MSA_CONFIG_APP) && !strings.HasPrefix(summary.Name, domain.MSA_REGISTRY_APP) {
 
-			n := node{viewApp.AppGuid, "App", summary.Name, summary.State, 0, c, m, d}
+			n := node{viewApp.AppGuid, "App", summary.Name, summary.State, viewApp.Essential, 0, c, m, d}
 			nodes = append(nodes, n)
 		}
 		//else {
 		//	n := node{viewApp.AppGuid, "App", summary.Name, summary.State, 0, c, m, d}
 		//	nodes_services = append(nodes_services, n)
 		//}
+
+		if viewApp.Essential == "front" {
+			frontend_app_guid = viewApp.AppGuid
+		}
 
 		// Service 정보
 		for _, service := range summary.Services {
@@ -692,7 +708,7 @@ func (s *Server) GetMicroserviceLink(w http.ResponseWriter, r *http.Request) {
 					}
 				}
 				if serviceFind == 0 {
-					n := node{service.Guid, "Service", service.Name, service.Plan.Name, 9, "", "", ""}
+					n := node{service.Guid, "Service", service.Name, service.Plan.Name, "", 9, "", "", ""}
 					services = append(services, n)
 				}
 			}
@@ -700,6 +716,16 @@ func (s *Server) GetMicroserviceLink(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+	// external api
+	for _, viewApi := range viewApis {
+		n := node{strconv.Itoa(viewApi.ID), "API", viewApi.Name, viewApi.Path, "", 12, "", "", ""}
+		nodes = append(nodes, n)
+		// frontend - api
+		if frontend_app_guid != "" {
+			l := link{frontend_app_guid, strconv.Itoa(viewApi.ID), "App", 12}
+			links = append(links, l)
+		}
+	}
 
 	// node_service
 	for _, ns := range nodes_services {
@@ -731,7 +757,7 @@ func (s *Server) GetMicroserviceLink(w http.ResponseWriter, r *http.Request) {
 					targetFind = true
 				}
 			}
-			if sourceFind || targetFind {
+			if sourceFind && targetFind {
 				l := link{}
 				for _, a := range nodes {
 					if a.ID == policy.Source.ID {
@@ -779,135 +805,135 @@ func (s *Server) GetMicroserviceLink(w http.ResponseWriter, r *http.Request) {
 }
 
 
-func (s *Server) ListMicroserviceApi(w http.ResponseWriter, r *http.Request) {
-	logger := s.logger.Session("micro")
-	logger.Debug("ListMicroserviceApi")
-
-	offset := 0
-	if ioffset, err := strconv.Atoi(r.FormValue("offset")); err == nil {
-		offset = ioffset
-	}
-	name := r.URL.Query().Get("name")
-
-	// 세션 사용자 아이디
-	session := domain.SessionManager.Load(r)
-	userid, _ := session.GetString(domain.USER_ID)
-
-	// 세션 사용자 속한 모든 space_guid
-	spaces, _ := s.userSpaces(userid)
-
-	views, err := s.repositoryFactory.View().ListMicroserviceApi(offset, name, spaces)
-
-
-	if err != nil {
-		logger.Error("failed ListMicroserviceApi", err)
-		w.WriteHeader(http.StatusInternalServerError)
-		json.NewEncoder(w).Encode(err)
-		return
-	}
-
-	w.WriteHeader(http.StatusOK)
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(views)
-
-
-}
-
-func (s *Server) SaveMicroserviceApi(w http.ResponseWriter, r *http.Request) {
-	logger := s.logger.Session("micro")
-	logger.Debug("SaveMicroserviceApi")
-
-	// 세션 사용자 아이디
-	session := domain.SessionManager.Load(r)
-	userid, _ := session.GetString(domain.USER_ID)
-
-	// 세션 사용자 속한 모든 space_guid
-	spaces, _ := s.userSpaces(userid)
-
-	id := r.FormValue(":id")
-
-	idint, _ := strconv.Atoi(id)
-
-	var view domain.View
-	err := json.NewDecoder(r.Body).Decode(&view)
-	if err != nil {
-		logger.Error("Decode err >>>", err)
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	resp, err := http.Get(fmt.Sprintf("http://%s/v2/api-docs", view.Url))
-	if err != nil {
-		logger.Error("failed http get api-docs", err)
-		w.WriteHeader(http.StatusInternalServerError)
-		json.NewEncoder(w).Encode(err)
-		return
-	}
-	defer resp.Body.Close()
-	body, err := ioutil.ReadAll(io.LimitReader(resp.Body, 1<<20))
-	if err != nil {
-		logger.Error("failed http get api-docs response", err)
-		w.WriteHeader(http.StatusInternalServerError)
-		json.NewEncoder(w).Encode(err)
-		return
-	}
-
-	if code := resp.StatusCode; code < 200 || code > 299 {
-		w.WriteHeader(http.StatusInternalServerError)
-		json.NewEncoder(w).Encode(resp.StatusCode)
-		return
-	} else {
-
-		view.ID = idint
-		view.Swagger = string(body)
-		err = s.repositoryFactory.View().SaveMicroserviceApi(view, spaces)
-
-		if err != nil {
-			logger.Error("failed SaveMicroserviceApi", err)
-			w.WriteHeader(http.StatusInternalServerError)
-			json.NewEncoder(w).Encode(err)
-			return
-		}
-	}
-
-
-	w.WriteHeader(http.StatusOK)
-	w.Header().Set("Content-Type", "application/json")
-
-
-}
-
-func (s *Server) GetMicroserviceApi(w http.ResponseWriter, r *http.Request) {
-	logger := s.logger.Session("micro")
-	logger.Debug("GetMicroserviceApi")
-
-	id := r.FormValue(":id")
-
-	idint, _ := strconv.Atoi(id)
-	view, err := s.repositoryFactory.View().GetMicroservice(idint)
-
-	if b := s.access(r, view.SpaceGuid); !b {
-		logger.Error("no auth", fmt.Errorf("no auth"))
-		w.WriteHeader(http.StatusInternalServerError)
-		w.Write([]byte("no auth"))
-		return
-	}
-
-	if err != nil {
-		logger.Error("failed GetMicroservice", err)
-		w.WriteHeader(http.StatusInternalServerError)
-		json.NewEncoder(w).Encode(err)
-		return
-	}
-
-
-	w.WriteHeader(http.StatusOK)
-	w.Header().Set("Content-Type", "application/json")
-	//json.NewEncoder(w).Encode(view.Swagger)
-	w.Write([]byte(view.Swagger))
-
-
-}
+//func (s *Server) ListMicroserviceApi(w http.ResponseWriter, r *http.Request) {
+//	logger := s.logger.Session("micro")
+//	logger.Debug("ListMicroserviceApi")
+//
+//	offset := 0
+//	if ioffset, err := strconv.Atoi(r.FormValue("offset")); err == nil {
+//		offset = ioffset
+//	}
+//	name := r.URL.Query().Get("name")
+//
+//	// 세션 사용자 아이디
+//	session := domain.SessionManager.Load(r)
+//	userid, _ := session.GetString(domain.USER_ID)
+//
+//	// 세션 사용자 속한 모든 space_guid
+//	spaces, _ := s.userSpaces(userid)
+//
+//	views, err := s.repositoryFactory.View().ListMicroserviceApi(offset, name, spaces)
+//
+//
+//	if err != nil {
+//		logger.Error("failed ListMicroserviceApi", err)
+//		w.WriteHeader(http.StatusInternalServerError)
+//		json.NewEncoder(w).Encode(err)
+//		return
+//	}
+//
+//	w.WriteHeader(http.StatusOK)
+//	w.Header().Set("Content-Type", "application/json")
+//	json.NewEncoder(w).Encode(views)
+//
+//
+//}
+//
+//func (s *Server) SaveMicroserviceApi(w http.ResponseWriter, r *http.Request) {
+//	logger := s.logger.Session("micro")
+//	logger.Debug("SaveMicroserviceApi")
+//
+//	// 세션 사용자 아이디
+//	session := domain.SessionManager.Load(r)
+//	userid, _ := session.GetString(domain.USER_ID)
+//
+//	// 세션 사용자 속한 모든 space_guid
+//	spaces, _ := s.userSpaces(userid)
+//
+//	id := r.FormValue(":id")
+//
+//	idint, _ := strconv.Atoi(id)
+//
+//	var view domain.View
+//	err := json.NewDecoder(r.Body).Decode(&view)
+//	if err != nil {
+//		logger.Error("Decode err >>>", err)
+//		http.Error(w, err.Error(), http.StatusInternalServerError)
+//		return
+//	}
+//
+//	resp, err := http.Get(fmt.Sprintf("http://%s/v2/api-docs", view.Url))
+//	if err != nil {
+//		logger.Error("failed http get api-docs", err)
+//		w.WriteHeader(http.StatusInternalServerError)
+//		json.NewEncoder(w).Encode(err)
+//		return
+//	}
+//	defer resp.Body.Close()
+//	body, err := ioutil.ReadAll(io.LimitReader(resp.Body, 1<<20))
+//	if err != nil {
+//		logger.Error("failed http get api-docs response", err)
+//		w.WriteHeader(http.StatusInternalServerError)
+//		json.NewEncoder(w).Encode(err)
+//		return
+//	}
+//
+//	if code := resp.StatusCode; code < 200 || code > 299 {
+//		w.WriteHeader(http.StatusInternalServerError)
+//		json.NewEncoder(w).Encode(resp.StatusCode)
+//		return
+//	} else {
+//
+//		view.ID = idint
+//		view.Swagger = string(body)
+//		err = s.repositoryFactory.View().SaveMicroserviceApi(view, spaces)
+//
+//		if err != nil {
+//			logger.Error("failed SaveMicroserviceApi", err)
+//			w.WriteHeader(http.StatusInternalServerError)
+//			json.NewEncoder(w).Encode(err)
+//			return
+//		}
+//	}
+//
+//
+//	w.WriteHeader(http.StatusOK)
+//	w.Header().Set("Content-Type", "application/json")
+//
+//
+//}
+//
+//func (s *Server) GetMicroserviceApi(w http.ResponseWriter, r *http.Request) {
+//	logger := s.logger.Session("micro")
+//	logger.Debug("GetMicroserviceApi")
+//
+//	id := r.FormValue(":id")
+//
+//	idint, _ := strconv.Atoi(id)
+//	view, err := s.repositoryFactory.View().GetMicroservice(idint)
+//
+//	if b := s.access(r, view.SpaceGuid); !b {
+//		logger.Error("no auth", fmt.Errorf("no auth"))
+//		w.WriteHeader(http.StatusInternalServerError)
+//		w.Write([]byte("no auth"))
+//		return
+//	}
+//
+//	if err != nil {
+//		logger.Error("failed GetMicroservice", err)
+//		w.WriteHeader(http.StatusInternalServerError)
+//		json.NewEncoder(w).Encode(err)
+//		return
+//	}
+//
+//
+//	w.WriteHeader(http.StatusOK)
+//	w.Header().Set("Content-Type", "application/json")
+//	//json.NewEncoder(w).Encode(view.Swagger)
+//	w.Write([]byte(view.Swagger))
+//
+//
+//}
 
 func (s *Server) DeleteMicroservice(w http.ResponseWriter, r *http.Request) {
 	logger := s.logger.Session("micro")
@@ -1001,6 +1027,15 @@ func (s *Server) DeleteMicroservice(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	sharedDomains, err := s.ListSpaceDomains(view.SpaceGuid)
+	if err != nil {
+		logger.Error("ListSpaceDomains err", err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	sharedDomain := sharedDomains.Resources[0]
+
 	for _, viewApp := range viewApps {
 		go func(appGuid string) {
 			// app stop
@@ -1015,6 +1050,10 @@ func (s *Server) DeleteMicroservice(w http.ResponseWriter, r *http.Request) {
 					// delete service binding
 					//if err := s.DeleteServiceBindingByApp(appGuid, sbr.Meta.Guid); err != nil {
 					//	logger.Error("DeleteMicroservice Servicebindingg error", err, lager.Data{"appGUID": appGuid})
+					//}
+					// delete service binding
+					//if err := s.DeleteServiceBinding(sbr.Entity.ServiceInstanceGuid); err != nil {
+					//	logger.Error("DeleteMicroservice DeleteServiceBinding error", err, lager.Data{"appGUID": sbr.Entity.ServiceInstanceGuid})
 					//}
 
 					// delete service instance (recursive)
@@ -1042,6 +1081,34 @@ func (s *Server) DeleteMicroservice(w http.ResponseWriter, r *http.Request) {
 			}
 
 		}(viewApp.AppGuid)
+
+		// monitoring
+		if viewApp.Essential == string(domain.MsMonitoring) {
+			//go func(appGuid string) {
+			//var datasourceId struct{id string}
+
+			spaceName, err := s.userSpaceName(view.SpaceGuid)
+			if err != nil {
+				logger.Error("failed userSpaceName", err)
+				w.WriteHeader(http.StatusInternalServerError)
+				json.NewEncoder(w).Encode(err)
+				return
+			}
+
+			if err = requestGrafanaServer("DELETE", fmt.Sprintf("http://%s.%s", fmt.Sprintf("%s-dashboard-%s", view.Name, spaceName), sharedDomain.Entity.Name), s.uaa.GrafanaAdminPassword, fmt.Sprintf("/api/datasources/name/%s_datasource", view.Name), nil, nil, logger); err != nil {
+				logger.Error("http delete grafana datasources request", err)
+				//http.Error(w, err.Error(), http.StatusInternalServerError)
+				//return
+			}
+
+			if err = requestGrafanaServer("DELETE", fmt.Sprintf("http://%s.%s", fmt.Sprintf("%s-dashboard-%s", view.Name, spaceName), sharedDomain.Entity.Name), s.uaa.GrafanaAdminPassword, fmt.Sprintf("/api/dashboards/uid/micrometer-%s", view.Name), nil, nil, logger); err != nil {
+				logger.Error("http delete grafana dashboards request", err)
+				//http.Error(w, err.Error(), http.StatusInternalServerError)
+				//return
+			}
+
+			//}(viewApp.AppGuid)
+		}
 	}
 
 
@@ -1088,4 +1155,47 @@ func contains(arr []string, str string) bool {
 		}
 	}
 	return false
+}
+
+
+func (s *Server) userOrgName(orgguid string) (string, error) {
+	logger := s.logger.Session("micro_server")
+	logger.Debug("userOrgName")
+
+
+	cf, err := s.uaa.CfClient()
+	if err != nil {
+		logger.Error("failed cf client", err)
+		return "", err
+	}
+
+	// space 권한 조회
+	org, err := cf.GetOrgByGuid(orgguid)
+	if err != nil {
+		logger.Error("failed cf GetOrgByGuid", err)
+		return "", err
+	}
+
+	return org.Name, nil
+}
+
+func (s *Server) userSpaceName(spaceguid string) (string, error) {
+	logger := s.logger.Session("micro_server")
+	logger.Debug("userSpaceName")
+
+
+	cf, err := s.uaa.CfClient()
+	if err != nil {
+		logger.Error("failed cf client", err)
+		return "", err
+	}
+
+	// space 권한 조회
+	space, err := cf.GetSpaceByGuid(spaceguid)
+	if err != nil {
+		logger.Error("failed cf GetSpaceByGuid", err)
+		return "", err
+	}
+
+	return space.Name, nil
 }

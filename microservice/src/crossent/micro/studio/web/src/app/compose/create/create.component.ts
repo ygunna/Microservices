@@ -7,6 +7,7 @@ import { Service } from '../../shared/models/service.model';
 import { Microservice } from '../../shared/models/microservice.model';
 import { SampleApp } from '../models/sample-app.model';
 import { environment } from '../../../environments/environment';
+import { NgForm } from '@angular/forms';
 
 @Component({
   selector: 'app-create',
@@ -16,14 +17,13 @@ import { environment } from '../../../environments/environment';
 export class CreateComponent implements OnInit {
   orgs : Org[];
   spaces : Space[];
-  microservice = new Microservice(0,null,null,'','',null,true);
+  microservice = new Microservice(0,null,null,'','',null,'false');
   step : number;
   essential : number;
   frontend: SampleApp = new SampleApp();
   backend: SampleApp = new SampleApp();
   config: Service;
   registry: Service;
-  gateway: Service;
 
   constructor(private apiService: ApiService,
               private router: Router) { }
@@ -35,17 +35,16 @@ export class CreateComponent implements OnInit {
 
     this.apiService.get('marketplace').subscribe(
       data => {
-        for(var service of data['resources']) {
-          service.entity.service_plan_guid = service.entity.service_plans[0];
-          if(service.entity.label == 'micro-config-server') {
-            this.config = service;
-            this.config.entity.name = 'config-server';
-          } else if(service.entity.label == 'micro-registry-server') {
-            this.registry = service;
-            this.registry.entity.name = 'registry-server';
-          } else if(service.entity.label == 'micro-gateway-server') {
-            this.gateway = service;
-            this.gateway.entity.name = 'gateway-server';
+        if(data['resources']) {
+          for (var service of data['resources']) {
+            service.entity.service_plan_guid = service.entity.service_plans[0];
+            if (service.entity.label == environment.configServiceLabel) {
+              this.config = service;
+              this.config.entity.name = 'config-server';
+            } else if (service.entity.label == environment.registryServiceLabel) {
+              this.registry = service;
+              this.registry.entity.name = 'registry-server';
+            }
           }
         }
       }
@@ -88,28 +87,39 @@ export class CreateComponent implements OnInit {
     this.listOrgSpaces(guid);
   }
 
-  Next() {
-    this.apiService.get('microservices?name='+this.microservice.name).subscribe(
-      data => {
-        if(data == 0) {
-          this.step = 2;
-        } else {
-          alert("입력하신 마이크로서비스명이 이미 존재합니다.");
-          this.microservice.name = '';
+  Next(form : NgForm) {
+    if(form.controls['name'].valid == true && form.controls['name'].valid != false) {
+      this.apiService.get('microservices?name=' + this.microservice.name).subscribe(
+        data => {
+          console.log(data)
+          if (data == 0) {
+            this.step = 2;
+          } else {
+            alert("입력하신 마이크로서비스명이 이미 존재합니다.");
+            this.microservice.name = '';
+          }
         }
-      }
-    );
+      );
+    }
   }
   Previous() {
     this.step = 1;
   }
 
   Create() {
+    if(!confirm('생성하시겠습니까?')){
+      return
+    }
     this.microservice['orgGuid'] = this.microservice.org.metadata.guid;
     this.microservice['orgName'] = this.microservice.org.entity.name;
     this.microservice['spaceGuid'] = this.microservice.space.metadata.guid;
     this.microservice['spaceName'] = this.microservice.space.entity.name;
-    this.microservice.services = {resources: [this.config, this.registry]};
+    if(this.config && this.registry) {
+      this.microservice.services = {resources: [this.config, this.registry]};
+    } else {
+      alert("config-server 와 registry-server 가 존재하지 않습니다.");
+      return;
+    }
     var apps = [];
     if(this.frontend.checked) apps.push(this.frontend.app);
     if(this.backend.checked) apps.push(this.backend.app);
@@ -120,7 +130,11 @@ export class CreateComponent implements OnInit {
         this.router.navigate(['/edit/'+data['id']]);
       },
       err => {
-        console.log('err >>>>>>>>>>> ');
+        if(err.error && err.error.indexOf('duplicateName') != -1){
+          alert('입력하신 마이크로서비스명이 이미 존재합니다.')
+          return;
+        }
+        alert(err)
         console.log(err);
       }
     );

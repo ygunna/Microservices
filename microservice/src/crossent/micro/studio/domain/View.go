@@ -24,6 +24,8 @@ type View struct {
 	Target      string   `json:"target"`
 	Port        int      `json:"port"`
 	Swagger	    string   `json:"swagger"`
+	Userid      string   `json:"user_id"`
+	Essential   string   `json:"essential"`
 }
 
 type MicroDetail struct {

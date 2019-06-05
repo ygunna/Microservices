@@ -1,0 +1,7 @@
+---
+name: grafana
+
+dependencies: []
+
+files:
+  - grafana/*.tar.gz

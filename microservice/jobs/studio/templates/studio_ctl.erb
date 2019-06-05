@@ -26,6 +26,18 @@ source /var/vcap/packages/pid_utils/pid_utils.sh
   postgres_database = ""
   postgres_sslmode = p("postgresql.sslmode", "verify-ca")
 
+  traefik_web_host = ""
+  traefik_web_port = ""
+  traefik_protocol = "http"
+  traefik_web_username = ""
+  traefik_web_password = ""
+  traefik_port = ""
+
+  grafana_protocol = "http"
+  grafana_web_host = ""
+  grafana_web_port = ""
+  grafana_admin_password = ""
+
   if_p("postgresql.address") do |addr|
     postgres_host, postgres_port = addr.split(":")
   end
@@ -59,6 +71,34 @@ source /var/vcap/packages/pid_utils/pid_utils.sh
   end
 
   postgres_sslmode = p("postgresql.sslmode", "disable")
+
+  if_link("traefik") do |traefik|
+    traefik_web_host = traefik.instances.first.address
+    traefik_web_port = traefik.p("traefik.web.port")
+    traefik_web_username = traefik.p("traefik.web.basic_auth.username")
+    traefik_web_password = traefik.p("traefik.web.basic_auth.password")
+
+    if_p("traefik.web.tls.cert") do |protocol|
+      traefik_protocol = "https"
+    end
+
+    traefik_port = traefik.p("traefik.http.port")
+  end if traefik_web_host.empty?
+
+  if traefik_web_host.empty?
+    raise "traefik.host not set and no 'traefik' link available"
+  end
+
+  if_link("grafana") do |grafana|
+    grafana_web_host = grafana.instances.first.address
+    grafana_web_port = grafana.p("grafana.listen_port")
+    grafana_admin_password = grafana.p("grafana.security.admin_password")
+
+    if_p("grafana.ssl.cert") do |protocol|
+      grafana_protocol = "https"
+    end
+
+  end
 %>
 
 case $1 in
@@ -97,6 +137,14 @@ case $1 in
       --skip-cert-check <%= p('cf.skip_cert_check') %> \
       --client_id <%= p('cf.client_id') %> \
       --client_secret <%= p('cf.client_secret') %> \
+      --traefik-api-url <%= traefik_protocol %>://<%= esc(traefik_web_host) %>:<%= traefik_web_port %> \
+      --traefik-port <%= esc(traefik_port)  %> \
+      --traefik-user <%= esc(traefik_web_username)  %> \
+      --traefik-password <%= esc(traefik_web_password)  %> \
+      --external-url <%= p('external_url') %> \
+      --grafana-url <%= grafana_protocol %>://<%= esc(grafana_web_host) %>:<%= grafana_web_port %> \
+      --grafana-port <%= esc(grafana_web_port)  %> \
+      --grafana-admin-password <%= grafana_admin_password %> \
       1>>$LOG_DIR/studio.stdout.log \
       2>>$LOG_DIR/studio.stderr.log
 

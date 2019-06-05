@@ -60,6 +60,7 @@ func (v *viewRepository) ListMicroservice(offset int, name string, spaces []stri
 	        //Join("jobs j ON b.job_id = j.id").
 		//Where(sq.Eq{"team_id": 1}).
 		Where(condition).
+		Where(sq.Eq{"active": "Y"}).
 		Where(sq.Eq{"space_guid": spaces}).
 		OrderBy("id").
 		Offset(uint64(offset)).
@@ -107,6 +108,7 @@ func (v *viewRepository) GetMicroservice(id int) (domain.View, error) {
 	err := psql.Select("id, name, org_guid, space_guid, version, description, visible, COALESCE(status, ' '), COALESCE(url,''), COALESCE(swagger,'')").
 		From("micro_app").
 		Where(sq.Eq{"id": id}).
+		Where(sq.Eq{"active": "Y"}).
 		RunWith(v.conn).
 		QueryRow().
 		Scan(&view.ID, &view.Name, &view.OrgGuid, &view.SpaceGuid, &view.Version, &view.Description, &view.Visible, &view.Status, &view.Url, &view.Swagger)
@@ -132,7 +134,8 @@ func (v *viewRepository) GetMicroservice(id int) (domain.View, error) {
 func (v *viewRepository) ListMicroserviceAppApp(id int) ([]domain.View, error) {
 	rows, err := psql.Select(`
 			micro_id,
-			app_guid
+			app_guid,
+			essential
 		`).
 		From("micro_app_app").
 		Where(sq.Eq{"micro_id": id}).
@@ -150,7 +153,7 @@ func (v *viewRepository) ListMicroserviceAppApp(id int) ([]domain.View, error) {
 		view := domain.View{}
 
 
-		err := rows.Scan(&view.ID, &view.AppGuid)
+		err := rows.Scan(&view.ID, &view.AppGuid, &view.Essential)
 
 		if err != nil {
 			return nil, err
@@ -260,10 +263,9 @@ func (v *viewRepository) DeleteMicroservice(id int) error {
 		return err
 	}
 
-	_, err = psql.Delete("micro_app").
-		Where(sq.Eq{
-		"id": id,
-		}).
+	_, err = psql.Update("micro_app").
+		Set("active", "N").
+		Where(sq.Eq{"id": id}).
 		RunWith(tx).
 		Exec()
 

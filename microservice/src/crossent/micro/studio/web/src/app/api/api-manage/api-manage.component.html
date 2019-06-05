@@ -1,0 +1,96 @@
+<h2 class="ui dividing header">
+  <div class="ui big breadcrumb">
+    <div class="active section">마이크로서비스 API 관리</div>
+  </div>
+</h2>
+
+<div class="ui main container">
+
+  <div class="box-wrap">
+
+    <div class="column">
+      <div class="ui form dropdown">
+        <div class="inline field">
+          <label>조직</label>
+          <select class="ui search dropdown" [(ngModel)]="org" (ngModelChange)="onChangeOrg()">
+            <option *ngFor="let org of orgs" [ngValue]="org">{{ org.entity.name }}</option>
+          </select>
+        </div>
+      </div>
+      <div class="ui form dropdown">
+        <div class="inline field">
+          <label>분류</label>
+          <select class="ui search dropdown" [(ngModel)]="part">
+            <option *ngFor="let part of parts" [ngValue]="part.value">{{part.name}}</option>
+          </select>
+        </div>
+      </div>
+      <div class="ui icon input">
+        <input placeholder="Name을 입력하세요." type="text" [(ngModel)]="searchName">
+        <i class="search icon"></i>
+      </div>
+      <div class="ui icon input">
+        <input placeholder="Path를 입력하세요." type="text" [(ngModel)]="searchPath">
+        <i class="search icon"></i>
+      </div>
+      <a class="ui right floated primary button white-btn add-btn submit" routerLink="/apicreate" routerLinkActive="active">
+        등록
+      </a>
+
+      <table class="ui fixed single line selectable striped table">
+        <thead>
+        <tr>
+          <th>분류</th>
+          <th>Name</th>
+          <th>Host</th>
+          <th>Path Prefix</th>
+          <th>Description</th>
+          <th>Updated</th>
+          <th></th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr *ngFor="let microapi of (microapis | searchApiFilter:searchName:part:searchPath)">
+          <td>{{microapi.part | codeFilter}}</td>
+          <td><a [routerLink]="['/apiview', microapi.id]">{{microapi.name}}</a></td>
+          <td>{{microapi.host}}</td>
+          <td>{{microapi.path}}</td>
+          <td title="{{microapi.description}}">{{microapi.description}}</td>
+          <td>{{microapi.updated | date:'yyyy-MM-dd'}}</td>
+          <td class="center aligned">
+            <!--<button class="ui icon button" [routerLink]="['/apihealth']" title="health">-->
+            <!--<i class="chart bar outline icon"></i>-->
+            <!--</button>-->
+            <button class="ui icon button" [routerLink]="['/apiview', microapi.id]" title="상세정보">
+              <i class="info icon"></i>
+            </button>
+            <button class="ui icon button" [routerLink]="['/apiedit', microapi.id]" title="수정">
+              <i class="pencil alternate icon"></i>
+            </button>
+            <button class="ui icon button" (click)="deleteApi(microapi.id)" title="삭제">
+              <i class="trash alternate outline icon"></i>
+            </button>
+          </td>
+        </tr>
+        </tbody>
+      </table>
+
+      <div class="ui stackable grid">
+        <div class="column">
+          <button class="fluid ui button" (click)="more()" [class.disabled]="isEnd" [class.basic]="isEnd">
+            <i class="icon angle down"></i>
+            more
+          </button>
+        </div>
+      </div>
+
+    </div>
+
+
+
+
+  </div>
+
+</div>
+
+

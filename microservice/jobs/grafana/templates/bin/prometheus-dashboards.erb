@@ -1,0 +1,32 @@
+#!/bin/bash
+
+set -eu
+
+DASHBOARDS_DIR=/var/vcap/store/grafana/dashboards
+JQ_CMD=/var/vcap/packages/jq/bin/jq
+
+rm -fr ${DASHBOARDS_DIR}/*
+mkdir -p ${DASHBOARDS_DIR}
+
+<% if_link('http_prometheus') do |prometheus| %>
+
+dashboard_folder=default
+mkdir -p ${DASHBOARDS_DIR}/${dashboard_folder}
+<% p('grafana.prometheus.dashboard_files', []).each do |dashboard_file| %>
+<% if !dashboard_file.nil? && dashboard_file.strip != "" %>
+dashboard_files=$(ls <%= dashboard_file %>)
+for dashboard_file in ${dashboard_files[@]}; do
+  filename=$(basename "${dashboard_file}")
+  echo -e "Updating dashboard ${dashboard_file} at $(date)"
+  sed 's/\${<%= p('grafana.prometheus.datasource_input_name') %>}/<%= p('grafana.prometheus.datasource_name') %>/g' \
+      "${dashboard_file}" > "${DASHBOARDS_DIR}/${dashboard_folder}/${filename}"
+  echo -e "Validating ${DASHBOARDS_DIR}/${dashboard_folder}/${filename}"
+  # want stderr going to stdout, don't want stdout at all
+  ${JQ_CMD} . < ${DASHBOARDS_DIR}/${dashboard_folder}/${filename} 2>&1 > /dev/null
+done
+<% end %>
+<% end %>
+
+<% end %>
+
+mkdir -p ${DASHBOARDS_DIR}/default

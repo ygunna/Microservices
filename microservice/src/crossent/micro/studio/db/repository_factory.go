@@ -7,6 +7,7 @@ import (
 type RepositoryFactory interface {
 	View() ViewRepository
 	Compose() ComposeRepository
+	Apigateway() ApigatewayRepository
 
 }
 
@@ -34,4 +35,6 @@ func (factory *repositoryFactory) Compose() ComposeRepository {
 	return newComposeRepository(factory.conn, factory.lockFactory)
 }
 
-
+func (factory *repositoryFactory) Apigateway() ApigatewayRepository {
+	return newApigatewayRepository(factory.conn, factory.lockFactory)
+}

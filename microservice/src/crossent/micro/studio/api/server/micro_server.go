@@ -10,6 +10,7 @@ import (
 	"crossent/micro/studio/domain"
 	"net/url"
 	"github.com/cloudfoundry-community/go-cfclient"
+	"encoding/base64"
 )
 
 type OrgResponse struct {
@@ -77,6 +78,7 @@ type AppSummary struct {
 	Memory int    `json:"memory"`
 	DiskQuota int `json:"disk_quota"`
 	State string `json:"state"`
+	Buildpack string `json:"buildpack"`
 	Environment map[string]string `json:"environment_json"`
 }
 
@@ -293,6 +295,68 @@ func (s *Server) ListOrgSpace (w http.ResponseWriter, r *http.Request) {
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 	}
 
+}
+
+func (s *Server ) ListManageOrg(w http.ResponseWriter, r *http.Request) {
+	logger := s.logger.Session("micro_server")
+	logger.Debug("ListManageOrg")
+
+	route := fmt.Sprintf("/v2/organizations")
+	var response OrgResponse
+	//error := s.uaa.GetResources("GET", route, nil, &response)
+	session := domain.SessionManager.Load(r)
+	access_token, err := session.GetString(domain.UAA_TOKEN_NAME)
+	if err != nil {
+		s.logger.Error("[ListOrg] failed cf get auth token", err)
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusUnauthorized)
+		w.Write([]byte(err.Error()))
+		return
+	}
+	sessionUserid, _ := session.GetString(domain.USER_ID)
+
+	cf, err := s.uaa.CfClient()
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		json.NewEncoder(w).Encode(err)
+		return
+	}
+
+	err = s.uaa.GetResourcesFromToken("GET", route, nil, &response, access_token)
+	if err != nil {
+		logger.Error("ListOrg", err)
+		var cfErrBody domain.CloudFoundryErrBody
+		json.Unmarshal([]byte(err.Error()), &cfErrBody)
+		var code int
+		if cfErrBody.CfErrorCode == "CF-InvalidAuthToken" {
+			code = cfErrBody.HttpStatusCode
+		} else {
+			code = http.StatusInternalServerError
+		}
+		http.Error(w, err.Error(), code)
+		return
+	}
+
+	result := OrgResponse{}
+
+	for _, org := range response.Resources {
+		if user, err := cf.ListOrgManagers(org.Metadata.GUID); err == nil {
+			for _, u := range user {
+				if u.Username == sessionUserid {
+					result.Resources = append(result.Resources, org)
+				}
+			}
+		}
+
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	if err = json.NewEncoder(w).Encode(result); err != nil {
+		logger.Error("ListOrg", err)
+		w.WriteHeader(http.StatusInternalServerError)
+		json.NewEncoder(w).Encode(err)
+	}
 }
 
 func (s *Server) GetSpace () SpaceResponse{
@@ -1049,8 +1113,10 @@ func (s *Server) Login (w http.ResponseWriter, r *http.Request) {
 	session.PutString(w, domain.UAA_TOKEN_NAME, token.AccessToken)
 	session.PutString(w, domain.USER_ID, request.Username)
 
-	m := make(map[string]bool)
-	m["result"] = true
+	auth := s.checkAuth(request.Username)
+
+	m := make(map[string]string)
+	m["result"] = base64.StdEncoding.EncodeToString([]byte(auth))
 	if err := json.NewEncoder(w).Encode(m); err != nil {
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 	}
@@ -1384,4 +1450,148 @@ func (s *Server) DeleteRoute (routeGuid string) error {
 	}
 
 	return err
+}
+
+func (s *Server) DeleteServiceBinding(serviceInstanceGuid string) error {
+
+	route := fmt.Sprintf("/v2/service_instances/%s/service_bindings", serviceInstanceGuid)
+	var serviceBindingsResp cfclient.ServiceBindingsResponse
+
+	err := s.uaa.GetResources("GET", route, nil, &serviceBindingsResp)
+
+	if err != nil {
+		s.logger.Error(err.Error(), err)
+	}
+
+	for _, sbr := range serviceBindingsResp.Resources {
+
+		route := fmt.Sprintf("/v2/service_bindings/%s", sbr.Meta.Guid)
+
+
+		err := s.uaa.GetResources("DELETE", route, nil, nil)
+		if err != nil {
+			s.logger.Error(err.Error(), err)
+		}
+	}
+
+	return err
+}
+
+func (s *Server) IsSpaceAuth(spaceGuid string, sessionUserid string) (bool, error) {
+	cf, err := s.uaa.CfClient()
+	if err != nil {
+		//w.WriteHeader(http.StatusInternalServerError)
+		//json.NewEncoder(w).Encode(err)
+		fmt.Println(err)
+		return false, err
+	}
+
+	// Manager check
+	managerCheck := false
+	if user, err := cf.ListSpaceManagers(spaceGuid); err == nil {
+		for _, u := range user {
+			if u.Username == sessionUserid {
+				managerCheck = true
+			}
+		}
+	}
+
+	if !managerCheck {
+		//logger.Error("failed ListSpaceManagers", err)
+		//w.WriteHeader(http.StatusInternalServerError)
+		//w.Write([]byte("not authorized"))
+		return false, nil
+	}
+
+	return true, nil
+}
+
+func (s *Server) IsOrgAuth(orgGuid string, sessionUserid string) (bool, error) {
+	cf, err := s.uaa.CfClient()
+	if err != nil {
+		//w.WriteHeader(http.StatusInternalServerError)
+		//json.NewEncoder(w).Encode(err)
+		fmt.Println(err)
+		return false, err
+	}
+
+	// Manager check
+	managerCheck := false
+	if user, err := cf.ListOrgManagers(orgGuid); err == nil {
+		for _, u := range user {
+			if u.Username == sessionUserid {
+				managerCheck = true
+			}
+		}
+	}
+
+	if !managerCheck {
+		//logger.Error("failed ListSpaceManagers", err)
+		//w.WriteHeader(http.StatusInternalServerError)
+		//w.Write([]byte("not authorized"))
+		return false, nil
+	}
+
+	return true, nil
+}
+
+func (s *Server) RestageApp (appGuid string, token *client.CF_TOKEN) (domain.AppResource, error) {
+
+	route := fmt.Sprintf("/v2/apps/%s/restage", appGuid)
+	var response domain.AppResource
+	error := s.uaa.GetResourcesFromToken("POST", route, nil, &response, token.AccessToken)
+
+	if error != nil {
+		s.logger.Error(error.Error(), error)
+	}
+
+	return response, error
+}
+
+func (s *Server) IsOrgManageAuth(orgGuid string, sessionUserid string) (bool, error) {
+	cf, err := s.uaa.CfClient()
+	if err != nil {
+		//w.WriteHeader(http.StatusInternalServerError)
+		//json.NewEncoder(w).Encode(err)
+		fmt.Println(err)
+		return false, err
+	}
+
+	// Manager check
+	managerCheck := false
+	if user, err := cf.ListOrgManagers(orgGuid); err == nil {
+		for _, u := range user {
+			if u.Username == sessionUserid {
+				managerCheck = true
+			}
+		}
+	}
+
+	if !managerCheck {
+		//logger.Error("failed ListSpaceManagers", err)
+		//w.WriteHeader(http.StatusInternalServerError)
+		//w.Write([]byte("not authorized"))
+		return false, nil
+	}
+
+	return true, nil
+}
+
+func (s *Server) checkAuth (userid string) string {
+	logger := s.logger.Session("micro_server")
+	logger.Debug("CheckAuth")
+
+	orgData := s.GetOrg()
+	for _, value := range orgData.Resources {
+		metadata := value.Metadata
+		if isAuth, err := s.IsOrgManageAuth(metadata.GUID, userid); err == nil {
+			if isAuth {
+				return "MANAGER"
+			}
+		}
+
+	}
+
+	return "MEMBER"
+
 }

@@ -1,0 +1,199 @@
+<h2 class="ui dividing header">
+  <div class="ui big breadcrumb">
+    <div class="active section">마이크로서비스 API 등록</div>
+  </div>
+</h2>
+
+<!--container-->
+<div class="ui main container">
+
+  <!--contents-->
+  <div class="column contents-area mb40 mt40">
+
+    <!--board-->
+    <div class="ui main container page-board form-board">
+      <div class="box-wrap wrap-p0">
+        <!-- <div> -->
+          <form #defaultForm="ngForm">
+            <div class="ui attached message">
+              <div class="header">
+                API 공개
+              </div>
+            </div>
+            <div class="ui attached segment" *ngIf="isFirst">
+              <div class="ui form">
+                <div class="field">
+                  <label>프로젝트 <i class="red asterisk icon"></i></label>
+                  <select class="ui fluid dropdown" id="org" name="org" required [(ngModel)]="microapi.orgguid" name="org" #org="ngModel">
+                    <option *ngFor="let org of orgs" [ngValue]="org.metadata.guid">{{ org.entity.name }}</option>
+                  </select>
+                </div>
+                <div class="position-center mt40">
+                  <button class="ui button gray" [routerLink]="['/apimanage']">취소</button>
+                  <button class="ui primary button" (click)="nextApi(true)" [disabled]="!org.valid">다음</button>
+                </div>
+              </div>
+            </div>
+            <div class="ui attached segment" *ngIf="isSecond">
+              <!--<form class="ui form">-->
+              <div class="ui form">
+
+                <div class="two fields">
+                  <div class="field">
+                    <label>분류 <i class="red asterisk icon"></i></label>
+                    <select class="ui fluid dropdown" id="part" name="part" required [(ngModel)]="microapi.part" #part="ngModel">
+                      <option *ngFor="let part of parts" [ngValue]="part.value">{{part.name}}</option>
+                    </select>
+                    <div class="ui pointing right label red hide" hidden="">
+                      필수 선택 항목입니다.
+                    </div>
+                  </div>
+                  <div class="field">
+                    <label>Name <i class="red asterisk icon"></i></label>
+                    <input id="name" name="name" placeholder="Name" required type="text" [(ngModel)]="microapi.name" [readonly]="isId" pattern="^[A-Za-z]{3,20}$" (input)="Next(defaultForm)" #name="ngModel">
+                    <div *ngIf="name.errors?.pattern" class="ui pointing right label red">
+                      영문만 입력가능합니다.(3자 이상)
+                    </div>
+                    <div class="ui pointing right label red hide" hidden="">
+                      필수 입력 항목입니다.
+                    </div>
+                    <div *ngIf="isNameValid == false" class="ui pointing right label red">
+                      API 명이 이미 존재합니다.
+                    </div>
+                  </div>
+                </div>
+                <div class="two fields">
+                  <div class="field">
+                    <label>Host</label>
+                    <input id="host" name="host" placeholder="msxpert.co.kr"type="text" [(ngModel)]="microapi.host">
+                    <div class="ui pointing right label red hide" hidden="">
+                      필수 입력 항목입니다.
+                    </div>
+                  </div>
+                  <div class="field">
+                    <label>Path Prefix <i class="red asterisk icon"></i></label>
+                    <input id="path" name="path" placeholder="/path" required type="text" [(ngModel)]="microapi.path">
+                    <div class="ui pointing right label red hide" hidden="">
+                      필수 입력 항목입니다.
+                    </div>
+                  </div>
+                </div>
+                <div class="two fields">
+                  <div class="field">
+                    <label>Method</label>
+                    <select class="ui fluid dropdown" id="method" name="method" [(ngModel)]="microapi.method">
+                      <option *ngFor="let method of methods" [ngValue]="method.value">{{method.name}}</option>
+                    </select>
+                  </div>
+                  <div class="field">
+                    <label>Path Prefix strip</label>
+                    <select class="ui fluid dropdown" id="pathStrip" name="pathStrip" [(ngModel)]="microapi.pathStrip">
+                      <option *ngFor="let pathstrip of pathstrips" [ngValue]="pathstrip">{{pathstrip}}</option>
+                    </select>
+                  </div>
+                </div>
+                <div class="field">
+                  <label>Description</label>
+                  <textarea name="description" placeholder="내용을 입력해주세요." rows="3" [(ngModel)]="microapi.description"></textarea>
+                </div>
+                <div class="field">
+                  <label>Whitelist (IP Range)</label>
+                  <input id="whitelist" name="whitelist" placeholder="10.42.0.0/16, 152.89.1.33/32" type="text" [(ngModel)]="microapi.whitelist">
+                </div>
+                <h5 class="ui dividing header" style="font-weight: normal">Request Headers</h5>
+                <div class="two fields" *ngFor="let h of microapi.headers; index as i">
+                  <div class="field">
+                    <input id="key" name="key" placeholder="X-Custom-Request-Header" type="text" value="{{h.key}}" readonly>
+                  </div>
+                  <div class="field">
+                    <input id="value" name="value" placeholder="test" type="text" value="{{h.value}}" readonly>
+                  </div>
+                  <button class="ui icon basic button" (click)="minus(i)">
+                    <i class="minus icon"></i>
+                  </button>
+                </div>
+                <div class="two fields">
+                  <div class="field">
+                    <input id="key" name="key" placeholder="X-Custom-Request-Header" type="text" [(ngModel)]="headerKey">
+                  </div>
+                  <div class="field">
+                    <input id="value" name="value" placeholder="test" type="text"  [(ngModel)]="headerVal">
+                  </div>
+                  <button class="ui icon basic button" (click)="plus()">
+                    <i class="plus icon"></i>
+                  </button>
+                </div>
+                <h5 class="ui dividing header" style="font-weight: normal">Request limit</h5>
+                <div class="three fields">
+                  <div class="field">
+                    <label>period (second)</label>
+                    <input id="period" name="period" placeholder="3" type="text" [(ngModel)]="microapi.period">
+                  </div>
+                  <div class="field">
+                    <label>average request</label>
+                    <input id="average" name="average" placeholder="5" type="text" [(ngModel)]="microapi.average">
+                  </div>
+                  <div class="field">
+                    <label>max limit</label>
+                    <input id="burst" name="burst" placeholder="10" type="text" [(ngModel)]="microapi.burst">
+                  </div>
+                </div>
+
+                <!--<div class="position-center mt40">-->
+                <!--<button class="ui button gray" tabindex="0">취소</button>-->
+                <!--<button class="ui primary button">생성</button>-->
+                <!--</div>-->
+                <!--</form>-->
+              </div>
+            </div>
+
+
+            <div class="ui attached message" *ngIf="isSecond">
+              <div class="header">
+                Microservice Frontend
+              </div>
+            </div>
+            <div class="ui attached segment" *ngIf="isSecond">
+              <!--<form class="ui form">-->
+              <div class="ui form">
+                <div class="field">
+                  <label>URL <i class="red asterisk icon"></i></label>
+                  <select class="ui fluid dropdown" id="microId" name="microId" [(ngModel)]="micro"  (ngModelChange)="onChangeMicro()" required>
+                    <option *ngFor="let micro of micros" [ngValue]="micro">{{micro.url}}</option>
+                  </select>
+                  <div class="ui pointing right label red hide" hidden="">
+                    필수 선택 항목입니다.
+                  </div>
+                </div>
+                <div class="field default">
+                  <label>Description</label>
+                  <textarea name="description" rows="3" readonly>{{micro.description}}</textarea>
+                </div>
+                <div class="field">
+                  <label>Max connections</label>
+                  <input id="version" name="version" placeholder="10" type="text"  [(ngModel)]="microapi.maxconn">
+                </div>
+                <div class="field">
+                  <p></p>
+                  <button class="fluid ui button" type="button" (click)="getSwagger()">Rest API</button>
+                </div>
+                <div class="field">
+                  <iframe [src]="iframeSrc" height="500" width="100%" style="border:1px solid #e0e1e2" [hidden]="isIframe==false"></iframe>
+                </div>
+
+                <div class="position-center mt40">
+                  <button class="ui button gray submit" [routerLink]="['/apimanage']">취소</button>
+                  <button class="ui primary button submit" (click)="save()" [disabled]="!defaultForm.form.valid || !isNameValid || micro.id == 0">등록</button>
+                </div>
+                <!--</form>-->
+              </div>
+            </div>
+          </form>
+        <!-- </div> -->
+      </div>
+    </div>
+    <!--//board-->
+  </div>
+  <!--//contents-->
+</div>
+<!--//container-->

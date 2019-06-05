@@ -3,3 +3,15 @@ blobstore:
   provider: s3
   options:
     bucket_name: diego-release-blobs
+name: traefik
+blobstore:
+  provider: s3
+  options:
+    bucket_name: traefik-boshrelease
+    region: eu-west-3
+name: prometheus
+blobstore:
+  provider: s3
+  options:
+    bucket_name: prometheus-boshrelease
+    region: us-east-1

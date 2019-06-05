@@ -20,14 +20,14 @@ export class DraggableDirective implements OnInit {
       if(D3Service.selectedElement != null) {
         if(D3Service.selectedElement.type == 'line') {
           this.linkPaths.forEach(link => {
-            if(link.id == D3Service.selectedElement.element.id) {
+            if(link.id == D3Service.selectedElement.element.id && link.type == 'Service') {
               this.linkPaths.splice(this.linkPaths.indexOf(link), 1);
               return;
             }
           });
-        } else if(D3Service.selectedElement.type == 'node') {
-          this.clickRemove.emit(D3Service.selectedElement.element);
-        }
+        } //else if(D3Service.selectedElement.type == 'node') {
+          //this.clickRemove.emit(D3Service.selectedElement.element);
+        //}
       }
     }
   }

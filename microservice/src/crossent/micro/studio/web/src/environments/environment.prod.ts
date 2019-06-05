@@ -1,12 +1,14 @@
 export const environment = {
   production: true,
-  apiUrl: 'http://micro.cloudxpert.co.kr:9180/api/v1',
-  swaggerApiUrl: 'http://micro.cloudxpert.co.kr:9180/swagger/',
+  apiUrl: 'http://10.244.238.2:9088/api/v1',
+  swaggerApiUrl: 'http://10.244.238.2:9088/swagger/',
   cfEnvNameMSA: 'msa',
   msServices: 'config-server,registry-server,gateway-server',
   sampleApps: 'front,back',
   nodeTypeApp: 'App',
   nodeTypeService: 'Service',
   configService: 'config-server',
-  registryService: 'registry-server'
+  registryService: 'registry-server',
+  configServiceLabel: 'micro-config-server',
+  registryServiceLabel: 'micro-registry-server'
 };

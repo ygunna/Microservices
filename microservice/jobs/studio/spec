@@ -15,6 +15,12 @@ consumes:
   - name: postgres
     type: database
     optional: true
+  - name: traefik
+    type: http-router
+    optional: true
+  - name: grafana
+    type: grafana
+    optional: true
 
 properties:
   bind_ip:
@@ -119,3 +125,7 @@ properties:
   cf.client_secret:
     description: cf client_secret
     default: micro-secret
+
+  external_url:
+    description: external url
+    default: http://127.0.0.1:8080

@@ -1,0 +1,7 @@
+---
+applications:
+  - name: ankus-startup
+    memory: 1G
+    path: ankus_microservice-0.0.1-SNAPSHOT.jar
+    buildpack: java_buildpack
+

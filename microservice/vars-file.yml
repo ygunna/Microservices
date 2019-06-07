@@ -1,9 +1,0 @@
----
-cf_api_url: https://api.bosh-lite.com
-uaa_url: https://uaa.bosh-lite.com
-cf_username: admin
-cf_password: ajmfniqupxhibagit9op
-cf_skip_cert_check: true
-external_url: http://10.244.238.2:9088
-haproxy_backend_port: 8089
-grafana_admin_password: admin

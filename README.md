@@ -7,7 +7,7 @@
 ```
 $ curl -sL https://deb.nodesource.com/setup_8.x | sudo -E bash -
 $ sudo apt-get install -y nodejs
-$ sudo npm install -g @angular/cli@1.6.7
+$ npm install -g @angular/cli@1.6.7
 ```
 
 2. node_module install
